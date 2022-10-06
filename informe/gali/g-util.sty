@@ -1,0 +1,32 @@
+\ProvidesPackage{g-util}[2022/09/15]
+
+\RequirePackage{ifthen}
+\newcommand{\ifthen}[2]{\ifthenelse{#1}{#2}{}}
+
+\RequirePackage{pgffor}
+\newcommand{\Repeat}[2]{\foreach \n in {1,...,#1}{#2}}
+
+\newcommand{\tab}{\phantom{mm}}
+
+%TODO: Move
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\RequirePackage{amsfonts, amsmath, amssymb, amsthm}
+\RequirePackage{hyperref, caption}
+\RequirePackage{graphicx, float, wrapfig}
+
+\newcommand{\bigO}[1]{\ensuremath{\mathcal{O}}(#1)}
+
+\newcommand{\done}{\ensuremath{_\square}}
+
+\newcommand{\tupla}[1]{\ensuremath{\langle}#1\ensuremath{\rangle}}
+
+\newcommand{\Ifthenelse}[3]{\text{if } #1 \text{ then } #2 \text{ else } #3 \text{ fi}}
+
+\newcommand{\Forall}[3]{(\ensuremath{\forall} #1: #2) (#3)}
+\newcommand{\Exists}[3]{(\ensuremath{\exists} #1: #2) (#3)}
+\newcommand{\Nexists}[3]{(\ensuremath{\nexists} #1: #2) (#3)}
+\newcommand{\Uexists}[3]{(\ensuremath{\exists!} #1: #2) (#3)}
+
+\newcommand{\lxor}{\ensuremath{\oplus}}
