@@ -1,10 +1,8 @@
 #include "utils.h"
 
-color contrincante(color equipo) { //TODO: Mover
-  return (equipo == ROJO) ? AZUL : ROJO;
-}
+struct Pos Pos::mover(direccion dir) const {
+  struct Pos pos = *this;
 
-struct Pos moverseDireccion(struct Pos pos, direccion dir) {
   switch (dir) {
     case IZQUIERDA: pos.x--; break;
     case DERECHA: pos.x++; break;
@@ -12,7 +10,10 @@ struct Pos moverseDireccion(struct Pos pos, direccion dir) {
     case ABAJO: pos.y--; break;
     case QUIETO: break;
   }
+
   return pos;
 }
 
-
+color contrincante(color equipo) {
+  return (equipo == ROJO) ? AZUL : ROJO;
+}

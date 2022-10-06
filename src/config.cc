@@ -8,16 +8,18 @@ Config::Config(void) {
     std::cerr << "Error: el archivo no pudo ser abierto" << std::endl;
     exit(1);
   }
-  config >> this->ancho >> this->alto
-    >> this->cantJugadores
-    >> this->banderas[ROJO].x >> this->banderas[ROJO].y 
-    >> this->banderas[AZUL].x >> this->banderas[AZUL].y;
+  config >> ancho >> alto
+    >> cantJugadores
+    >> banderas[ROJO].x >> banderas[ROJO].y 
+    >> banderas[AZUL].x >> banderas[AZUL].y;
 
-  this->jugadores[ROJO].resize(this->cantJugadores);
-  this->jugadores[AZUL].resize(this->cantJugadores);
+  jugadores[ROJO].resize(cantJugadores);
+  jugadores[AZUL].resize(cantJugadores);
 
-  for (int i = 0; i < this->cantJugadores; i++)
-    config >> this->jugadores[ROJO][i].x >> this->jugadores[ROJO][i].y;
-  for (int i = 0; i < this->cantJugadores; i++)
-    config >> this->jugadores[AZUL][i].x >> this->jugadores[AZUL][i].y;
+  for (int i = 0; i < cantJugadores; i++)
+    config >> jugadores[ROJO][i].x >> jugadores[ROJO][i].y;
+  for (int i = 0; i < cantJugadores; i++)
+    config >> jugadores[AZUL][i].x >> jugadores[AZUL][i].y;
+
+  //TODO: Check invalid values
 };

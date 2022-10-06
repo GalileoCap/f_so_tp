@@ -1,28 +1,32 @@
 #include "barrier.h"
 
-Barrier::Barrier(int N) {
-  this->N = N;
-  this->n = 0;
+Barrier::Barrier(void) {} //U: Default constructor without initializing semaphores
 
-  for (int i = 0; i < 3; i++)
-    sem_init(&this->step[i], 1, 0);
+Barrier::Barrier(int N) : N(N), n(0) {
+  for (int i = 0; i < 3; i++) //A: Initialize all semaphores to not let anyone through
+    sem_init(&step[i], 1, 0);
 }
 
-void Barrier::wait() {
-  sem_wait(&this->step[0]); //A: Waits until the operator opens it
+int Barrier::wait(void) {
+  sem_wait(&step[0]); //A: Wait until the operator lets us through
 
   mtx.lock();
-  if (++n == N) for (int i = 0; i < N; i++) sem_post(&this->step[1]);
+  int res = msg;
+
+  if (++n == N) for (int i = 0; i < N; i++) sem_post(&step[1]);
   mtx.unlock();
-  sem_wait(&this->step[1]);
+  sem_wait(&step[1]); //A: Wait until everyone's here
 
   mtx.lock();
-  if (--n == 0) for (int i = 0; i < N; i++) sem_post(&this->step[2]);
+  if (--n == 0) for (int i = 0; i < N; i++) sem_post(&step[2]);
   mtx.unlock();
-  sem_wait(&this->step[2]);
+  sem_wait(&step[2]);
+
+  return res;
 }
 
-void Barrier::post() {
-  for (int i = 0; i < N; i++)
-    sem_post(&this->step[0]);
+void Barrier::post(int _msg) {
+  msg = _msg;
+  for (int i = 0; i < N; i++) //A: Let everyone through the first semaphore
+    sem_post(&step[0]);
 }

@@ -5,13 +5,13 @@
 #include <semaphore.h>
 
 struct Barrier {
-  Barrier();
-  Barrier(int N);
+  Barrier(void);
+  Barrier(int _N);
 
-  void wait();
-  void post();
+  int wait(void);
+  void post(int _msg);
 
-  int N, n;
+  int N, n, msg;
   std::mutex mtx;
   sem_t step[3];
 };

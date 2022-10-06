@@ -1,62 +1,63 @@
 #include "gameMaster.h"
-#include "utils.h"
-#include <iostream>
 
 GameMaster::GameMaster(struct Config& config) {
-  this->jugadores[ROJO] = config.jugadores[ROJO];
-  this->jugadores[AZUL] = config.jugadores[AZUL];
+  jugadores[ROJO] = config.jugadores[ROJO];
+  jugadores[AZUL] = config.jugadores[AZUL];
 
-  this->tablero.resize(config.alto, std::vector<color> (config.ancho, VACIO)); //A: Inicio el tablero vacío
-  this->tablero[config.banderas[ROJO].y][config.banderas[ROJO].x] = BANDERA_ROJA; //A: Pongo las banderas
-  this->tablero[config.banderas[AZUL].y][config.banderas[AZUL].x] = BANDERA_AZUL;
-  for (struct Pos& pos : this->jugadores[ROJO]) this->tablero[pos.y][pos.x] = ROJO; //A: Pongo a los jugadores
-  for (struct Pos& pos : this->jugadores[AZUL]) this->tablero[pos.y][pos.x] = AZUL; //A: Pongo a los jugadores
+  tablero.resize(config.alto, std::vector<color> (config.ancho, VACIO)); //A: Inicio el tablero vacío
+  tablero[config.banderas[ROJO].y][config.banderas[ROJO].x] = BANDERA_ROJA; //A: Pongo las banderas
+  tablero[config.banderas[AZUL].y][config.banderas[AZUL].x] = BANDERA_AZUL;
+  for (struct Pos& pos : jugadores[ROJO]) tablero[pos.y][pos.x] = ROJO; //A: Pongo a los jugadores
+  for (struct Pos& pos : jugadores[AZUL]) tablero[pos.y][pos.x] = AZUL; //A: Pongo a los jugadores
 
-  this->equipo = EMPIEZA;
-  this->ganador = INDEFINIDO;
+  equipo = EMPIEZA;
+  ganador = INDEFINIDO;
 
-  //TODO: Check for invalid values
+  barriers[ROJO] = new Barrier(config.cantJugadores);
+  barriers[AZUL] = new Barrier(config.cantJugadores);
 
-  this->barriers[ROJO] = new Barrier(config.cantJugadores);
-  this->barriers[AZUL] = new Barrier(config.cantJugadores);
-
-  this->barriers[this->equipo]->post(); //A: Empieza un equipo
+  barriers[equipo]->post(INDEFINIDO); //A: Empieza un equipo
 }
 
-void GameMaster::moverJugador(const direccion dir, const int jugador) {
-  struct Pos& pos = this->jugadores[equipo][jugador],
-              newPos = moverseDireccion(pos, dir);
+void GameMaster::moverJugador(int nroJugador, direccion dir) {
+  struct Pos pos = jugadores[equipo][nroJugador],
+             newPos = pos.mover(dir);
 
-  if (ganador.load() == INDEFINIDO) { //A: Sigue el juego
-    this->mtx.lock();
-    bool valid = true;
-    //TODO: isEmpty(newPos) || hasFlag(newPos, contrincante(this->equipo))
-    //TODO: Other checks
+  mtx.lock();
+  if (ganador == INDEFINIDO) { //A: Sigue el juego
+    bool valid = isEmpty(newPos) || hasFlag(newPos, contrincante(equipo));
     
     if (valid) {
-      if (this->tablero[newPos.y][newPos.x] == BANDERA_ROJA) { //TODO: hasFlag(newPos, contrincante(this->equipo))
-        this->ganador.store(this->equipo); //A: Ganaron
-        std::cout << this->equipo << " " << jugador << " WIN" << std::endl;
-      }
+      if (hasFlag(newPos, contrincante(equipo))) ganador = equipo; //A: Ganaron
 
-      this->tablero[pos.y][pos.x] = VACIO;
-      pos = newPos; //NOTA: Lo cambia por referencia
-      this->tablero[pos.y][pos.x] = equipo;
+      //A: Actualizo el tablero
+      tablero[pos.y][pos.x] = VACIO;
+      tablero[newPos.y][newPos.x] = equipo;
+      jugadores[equipo][nroJugador] = newPos;
     }
-
-    this->mtx.unlock();
   }
+  mtx.unlock();
 }
 
-void GameMaster::terminoRonda(const color equipo) {
-  this->mtx.lock();
-  if (this->ganador.load() == INDEFINIDO) {
-    this->turno++;
-    this->equipo = contrincante(equipo);
-    this->barriers[this->equipo]->post();
-  } else {
-    this->barriers[ROJO]->post();
-    this->barriers[AZUL]->post();
+void GameMaster::terminoRonda(color _equipo) {
+  mtx.lock();
+
+  if (ganador == INDEFINIDO) { //A: Sigue el juego
+    equipo = contrincante(_equipo); //A: Cambio de equipo
+    barriers[equipo]->post(INDEFINIDO); //A: Le doy el turno
+  } else { //A: Se terminó el juego
+    barriers[ROJO]->post(ganador); //A: Le aviso a ambos equipos
+    barriers[AZUL]->post(ganador);
   }
-  this->mtx.unlock();
+  mtx.unlock();
+}
+
+bool GameMaster::isEmpty(struct Pos pos) {
+  //NOTA: Asume mtx.lock()
+  return tablero[pos.y][pos.x] == VACIO;
+}
+
+bool GameMaster::hasFlag(struct Pos pos, color _equipo) {
+  //NOTA: Asume mtx.lock()
+  return tablero[pos.y][pos.x] == ((_equipo == ROJO) ? BANDERA_ROJA : BANDERA_AZUL);
 }

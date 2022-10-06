@@ -1,18 +1,17 @@
 #include "equipo.h"
-#include "utils.h"
-#include <iostream>
 
-Equipo::Equipo(color equipo, estrategia strat, int quantum, struct GameMaster& belcebu, struct Config& config) {
-  this->belcebu = &belcebu;
-  this->equipo = equipo;
-  this->strat = strat;
-  this->quantum = quantum;
-  this->posiciones = belcebu.jugadores[equipo];
+Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, struct GameMaster& _belcebu, struct Config& _config) {
+  belcebu = &_belcebu;
+  equipo = _equipo;
+  strat = _strat;
+  quantum = _quantum;
 
-  switch (this->strat) { //A: Preparo la estrategia elegida
+  threads.resize(_config.cantJugadores);
+
+  switch (strat) { //A: Preparo la estrategia elegida
     case SECUENCIAL:
-      sem_init(&this->seq_sem, 1, 1);
-      this->seq_turno = 0;
+      sem_init(&seq_sem, 1, 1);
+      seq_turno = 0;
       break;
     case RR: break;
     case SHORTEST: break;
@@ -21,46 +20,43 @@ Equipo::Equipo(color equipo, estrategia strat, int quantum, struct GameMaster& b
 }
 
 void Equipo::comenzar(void) {
-  for (int i = 0; i < this->belcebu->jugadores[this->equipo].size(); i++) //A: Creo los threads de mis jugadores
-    this->jugadores.emplace_back(std::thread(&Equipo::jugador, this, i));
+  for (int i = 0; i < threads.size(); i++) //A: Creo los threads de mis jugadores
+    threads[i] = std::thread(&Equipo::jugador, this, i);
 }
 
 void Equipo::terminar(void) {
-  for (auto& t : this->jugadores) t.join();
+  for (auto& t : threads) t.join();
+}
+
+bool Equipo::esperarBelcebu(void) {
+  return belcebu->barriers[equipo]->wait() != INDEFINIDO; //A: Espero a belcebu y me fijo si se terminó el juego
 }
 
 void Equipo::jugador(int nroJugador) {
   while (true) {
-    this->belcebu->barriers[this->equipo]->wait(); //A: Espero a que le toque a mi equipo 
-    if (this->belcebu->ganador.load() != INDEFINIDO) break; //A: Terminó el juego
+    if (esperarBelcebu()) break; //A: Espero a que le toque a mi equipo y si se terminó el juego termino
 
-    switch (this->strat) { //A: Aplico la estrategia elegida
-      case SECUENCIAL: this->secuencial(nroJugador); break;
-      case RR: this->roundRobin(nroJugador); break;
-      case SHORTEST: this->shortestDistanceFirst(nroJugador); break;
-      case USTEDES: this->ustedes(nroJugador); break;
+    switch (strat) { //A: Aplico la estrategia elegida
+      case SECUENCIAL: secuencial(nroJugador); break;
+      case RR: roundRobin(nroJugador); break;
+      case SHORTEST: shortestDistanceFirst(nroJugador); break;
+      case USTEDES: ustedes(nroJugador); break;
     }
-
-    this->belcebu->barriers[this->equipo]->wait(); //A: Espero a que termine todo mi equipo
-    if (this->belcebu->ganador.load() != INDEFINIDO) break; //A: Terminó el juego
   }
-  std::cout << this->equipo << " " << nroJugador << " END" << std::endl;
 }
 
 void Equipo::secuencial(int nroJugador) {
-  sem_wait(&this->seq_sem); //A: Espero a mi turno
-  std::cout << this->equipo << " " << nroJugador << " IN" << std::endl;
+  sem_wait(&seq_sem); //A: Espero a mi turno
   
-  struct Pos to = {1, 1}; //TODO: Elegir de alguna manera
-  this->moverseHacia(nroJugador, to);
+  struct Pos to = (equipo == ROJO) ? Pos({4, 4}) : Pos({1, 1}); //TODO: Elegir de alguna manera
+  moverseHacia(nroJugador, to);
 
-  if (++this->seq_turno == this->jugadores.size()) { //A: Soy el último
-    this->belcebu->terminoRonda(this->equipo); //A: Le aviso a belcebu
-    this->seq_turno = 0;
+  if (++seq_turno == threads.size()) { //A: Soy el último
+    belcebu->terminoRonda(equipo); //A: Le aviso a belcebu
+    seq_turno = 0;
   }
 
-  std::cout << this->equipo << " " << nroJugador << " OUT" << std::endl;
-  sem_post(&this->seq_sem); //A: Dejo jugar a alguien más
+  sem_post(&seq_sem); //A: Dejo jugar a alguien más
 }
 
 void Equipo::roundRobin(int nroJugador) {
@@ -76,15 +72,15 @@ struct Pos Equipo::buscarBanderaContraria(void) {
 }
 
 void Equipo::moverseHacia(int nroJugador, struct Pos to) {
-  direccion dir = QUIETO;
-  struct Pos from = this->posiciones[nroJugador];
+  struct Pos from = belcebu->jugadores[equipo][nroJugador];
 
-  if (from.x < to.x) dir = IZQUIERDA;
-  else if (from.x > to.x) dir = DERECHA;
+  direccion dir;
+  if (from.x > to.x) dir = IZQUIERDA;
+  else if (from.x < to.x) dir = DERECHA;
   else if (from.y < to.y) dir = ARRIBA;
   else if (from.y > to.y) dir = ABAJO;
-  //TODO: Check for collisions
+  else dir = QUIETO;
   //TODO: Pathfinding
 
-  this->belcebu->moverJugador(dir, nroJugador);
+  belcebu->moverJugador(nroJugador, dir);
 }

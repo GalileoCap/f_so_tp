@@ -1,6 +1,9 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#define EMPIEZA ROJO
+#define CONFIG_FPATH "./config/config_parameters.csv"
+
 enum direccion {
   ARRIBA, ABAJO, IZQUIERDA, DERECHA, QUIETO
 };
@@ -23,13 +26,10 @@ enum estrategia {
 };
 
 struct Pos {
+  struct Pos mover(direccion dir) const;
   int x, y;
 };
 
-#define EMPIEZA ROJO
-#define CONFIG_FPATH "./config/config_parameters.csv"
-
 color contrincante(color equipo);
-struct Pos moverseDireccion(struct Pos pos, direccion dir);
 
 #endif // __UTILS_H__
