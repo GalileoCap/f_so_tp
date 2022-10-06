@@ -2,7 +2,7 @@
 #define __UTILS_H__
 
 enum direccion {
-  ARRIBA, ABAJO, IZQUIERDA, DERECHA
+  ARRIBA, ABAJO, IZQUIERDA, DERECHA, QUIETO
 };
 
 enum color {

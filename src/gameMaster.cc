@@ -1,4 +1,5 @@
 #include "gameMaster.h"
+#include "barrier.h"
 #include "utils.h"
 
 GameMaster::GameMaster(struct Config& config) {
@@ -16,10 +17,10 @@ GameMaster::GameMaster(struct Config& config) {
 
   //TODO: Check for invalid values
 
-  sem_init(&this->semaphores[ROJO], 1, 0);
-  sem_init(&this->semaphores[AZUL], 1, 0);
+  this->barriers[ROJO] = new Barrier(config.cantJugadores);
+  this->barriers[AZUL] = new Barrier(config.cantJugadores);
 
-  sem_post(&this->semaphores[EMPIEZA]); //A: Empieza un equipo
+  this->barriers[EMPIEZA]->post(); //A: Empieza un equipo
 }
 
 int GameMaster::moverJugador(const direccion dir, const int jugador) {

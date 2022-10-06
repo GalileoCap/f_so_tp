@@ -1,10 +1,9 @@
 #ifndef GAMEMASTER_H
 #define GAMEMASTER_H
 
+#include "barrier.h"
 #include "config.h"
 #include "utils.h"
-
-#include <semaphore.h>
 
 struct GameMaster {
   GameMaster(struct Config& config);
@@ -16,7 +15,7 @@ struct GameMaster {
   std::vector<std::vector<color>> tablero;
 
   color equipo, ganador;
-  sem_t semaphores[2];
+  struct Barrier *barriers[2];
 };
 
 #endif // GAMEMASTER_H
