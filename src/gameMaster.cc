@@ -1,6 +1,6 @@
 #include "gameMaster.h"
-#include "barrier.h"
 #include "utils.h"
+#include <iostream>
 
 GameMaster::GameMaster(struct Config& config) {
   this->jugadores[ROJO] = config.jugadores[ROJO];
@@ -20,11 +20,43 @@ GameMaster::GameMaster(struct Config& config) {
   this->barriers[ROJO] = new Barrier(config.cantJugadores);
   this->barriers[AZUL] = new Barrier(config.cantJugadores);
 
-  this->barriers[EMPIEZA]->post(); //A: Empieza un equipo
+  this->barriers[this->equipo]->post(); //A: Empieza un equipo
 }
 
-int GameMaster::moverJugador(const direccion dir, const int jugador) {
+void GameMaster::moverJugador(const direccion dir, const int jugador) {
+  struct Pos& pos = this->jugadores[equipo][jugador],
+              newPos = moverseDireccion(pos, dir);
+
+  if (ganador.load() == INDEFINIDO) { //A: Sigue el juego
+    this->mtx.lock();
+    bool valid = true;
+    //TODO: isEmpty(newPos) || hasFlag(newPos, contrincante(this->equipo))
+    //TODO: Other checks
+    
+    if (valid) {
+      if (this->tablero[newPos.y][newPos.x] == BANDERA_ROJA) { //TODO: hasFlag(newPos, contrincante(this->equipo))
+        this->ganador.store(this->equipo); //A: Ganaron
+        std::cout << this->equipo << " " << jugador << " WIN" << std::endl;
+      }
+
+      this->tablero[pos.y][pos.x] = VACIO;
+      pos = newPos; //NOTA: Lo cambia por referencia
+      this->tablero[pos.y][pos.x] = equipo;
+    }
+
+    this->mtx.unlock();
+  }
 }
 
 void GameMaster::terminoRonda(const color equipo) {
+  this->mtx.lock();
+  if (this->ganador.load() == INDEFINIDO) {
+    this->turno++;
+    this->equipo = contrincante(equipo);
+    this->barriers[this->equipo]->post();
+  } else {
+    this->barriers[ROJO]->post();
+    this->barriers[AZUL]->post();
+  }
+  this->mtx.unlock();
 }

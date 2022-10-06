@@ -22,7 +22,7 @@ struct Equipo {
   void shortestDistanceFirst(int nroJugador);
   void ustedes(int nroJugador);
 
-  int moverseHacia(int nroJugador, struct Pos to);
+  void moverseHacia(int nroJugador, struct Pos to);
 
   struct GameMaster *belcebu; 
   color equipo;
@@ -30,7 +30,9 @@ struct Equipo {
   std::vector<std::thread> jugadores;
   std::vector<struct Pos> posiciones;
 
-  sem_t seqSem; //U: Semáforo para la estrategia secuencial
+  sem_t seq_sem; //U: Semáforo para la estrategia secuencial
+  int seq_turno; //U: Cantidad de jugadores que ya se movieron en la estrategia secuencial
+
   int quantum, quantumLeft;
 };
 

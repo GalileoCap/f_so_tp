@@ -29,4 +29,7 @@ struct Pos {
 #define EMPIEZA ROJO
 #define CONFIG_FPATH "./config/config_parameters.csv"
 
+color contrincante(color equipo);
+struct Pos moverseDireccion(struct Pos pos, direccion dir);
+
 #endif // __UTILS_H__
