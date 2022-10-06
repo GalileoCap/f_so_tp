@@ -13,6 +13,13 @@ GameMaster::GameMaster(struct Config& config) {
 
   this->equipo = EMPIEZA;
   this->ganador = INDEFINIDO;
+
+  //TODO: Check for invalid values
+
+  sem_init(&this->semaphores[ROJO], 1, 0);
+  sem_init(&this->semaphores[AZUL], 1, 0);
+
+  sem_post(&this->semaphores[EMPIEZA]); //A: Empieza un equipo
 }
 
 int GameMaster::moverJugador(const direccion dir, const int jugador) {

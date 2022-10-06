@@ -5,6 +5,7 @@
 #include "gameMaster.h"
 
 #include <thread>
+#include <semaphore.h>
 #include <vector>
 
 struct Equipo {
@@ -13,14 +14,18 @@ struct Equipo {
   void comenzar(void);
   void terminar(void);
 
-  void jugador(const int nroJugador);
+  void jugador(int nroJugador);
   struct Pos buscarBanderaContraria(void);
+
+  void secuencial(int nroJugador);
+  void roundRobin(int nroJugador);
+  void shortestDistanceFirst(int nroJugador);
+  void ustedes(int nroJugador);
 
   struct GameMaster *belcebu; 
   color equipo;
   estrategia strat;
   std::vector<std::thread> jugadores;
-  std::vector<struct Pos> posiciones;
 
   int quantum, quantumLeft;
 };
