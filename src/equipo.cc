@@ -1,12 +1,14 @@
 #include "equipo.h"
 
-Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, struct GameMaster& _belcebu, struct Config& _config) {
-  belcebu = &_belcebu;
+Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, class GameMaster *_belcebu, class Config& config) {
+  belcebu = _belcebu;
   equipo = _equipo;
   strat = _strat;
   quantum = _quantum;
 
-  threads.resize(_config.cantJugadores);
+  posiciones = config.jugadores[equipo];
+
+  threads.resize(config.cantJugadores);
 
   switch (strat) { //A: Preparo la estrategia elegida
     case SECUENCIAL:
@@ -29,7 +31,7 @@ void Equipo::terminar(void) {
 }
 
 bool Equipo::esperarBelcebu(void) {
-  return belcebu->barriers[equipo]->wait() != INDEFINIDO; //A: Espero a belcebu y me fijo si se terminó el juego
+  return belcebu->waitTurn(equipo) != INDEFINIDO; //A: Espero a belcebu y me fijo si se terminó el juego
 }
 
 void Equipo::jugador(int nroJugador) {
@@ -72,7 +74,7 @@ struct Pos Equipo::buscarBanderaContraria(void) {
 }
 
 void Equipo::moverseHacia(int nroJugador, struct Pos to) {
-  struct Pos from = belcebu->jugadores[equipo][nroJugador];
+  struct Pos from = posiciones[nroJugador];
 
   direccion dir;
   if (from.x > to.x) dir = IZQUIERDA;

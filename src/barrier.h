@@ -4,13 +4,15 @@
 #include <mutex>
 #include <semaphore.h>
 
-struct Barrier {
+class Barrier {
+public:
   Barrier(void);
   Barrier(int _N);
 
   int wait(void);
   void post(int _msg);
 
+private:
   int N, n, msg;
   std::mutex mtx;
   sem_t step[3];

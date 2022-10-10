@@ -1,7 +1,5 @@
 #include "gameMaster.h"
-#include "equipo.h"
 #include "config.h"
-#include "utils.h"
 
 #include <iostream>
 
@@ -9,19 +7,13 @@ const estrategia strat = SECUENCIAL;
 const int quantum = 10;
 
 int main(void) {
-  struct Config config;
-  struct GameMaster belcebu(config);
+  class Config config;
+  class GameMaster belcebu(strat, quantum, config);
 
-  //A: Creo equipos
-  struct Equipo rojo(ROJO, strat, quantum, belcebu, config),
-                azul(AZUL, strat, quantum, belcebu, config);
+  belcebu.comenzar();
+  int ganador = belcebu.terminar();
 
-  rojo.comenzar();
-  azul.comenzar();
-  rojo.terminar();
-  azul.terminar();	
-
-  std::cout << "Bandera capturada por el equipo " << belcebu.ganador << ". Felicidades!" << std::endl;
+  std::cout << "Bandera capturada por el equipo " << ganador << ". Felicidades!" << std::endl;
   return 0;
 }
 
