@@ -1,4 +1,7 @@
 #include "equipo.h"
+#ifdef DEBUG
+#include <iostream>
+#endif // DEBUG
 
 Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, class GameMaster *_belcebu, class Config& config) {
   belcebu = _belcebu;
@@ -49,11 +52,18 @@ void Equipo::jugador(int nroJugador) {
 
 void Equipo::secuencial(int nroJugador) {
   seq_mtx.lock(); //A: Espero a mi turno
+#ifdef DEBUG
+    std::cout << equipo << " " << nroJugador << " STEP" << std::endl;
+#endif // DEBUG
   
   struct Pos to = (equipo == ROJO) ? Pos({4, 4}) : Pos({1, 1}); //TODO: Elegir de alguna manera
   moverseHacia(nroJugador, to);
 
   if (++seq_turno == threads.size()) { //A: Soy el último
+#ifdef DEBUG
+    std::cout << equipo << " " << nroJugador << " END" << std::endl;
+#endif // DEBUG
+
     belcebu->terminoRonda(equipo); //A: Le aviso a belcebu
     seq_turno = 0;
   }

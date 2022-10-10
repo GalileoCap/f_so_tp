@@ -3,10 +3,12 @@ BUILDD := ./build
 TESTD := ./test
 
 OFILE := tpso
+DBGFILE := $(OFILE).debug
 ENTREGA := Cappella_TODO_TODO_TODO.zip #TODO
 
 CXX := g++
 CFLAGS := -Og -I$(SRCD)
+DBGFLAGS := $(CFLAGS) -g -DDEBUG
 
 CSRC := $(wildcard $(SRCD)/**/*.cc $(SRCD)/*.cc)
 TEXSRC := ./informe/informe.tex
@@ -20,6 +22,10 @@ entrega: clean mkdir
 main: clean mkdir
 	$(CXX) $(CFLAGS) $(CSRC) -o $(BUILDD)/$(OFILE)
 	@printf "Run with:\n$(BUILDD)/$(OFILE)\n"
+
+debug: clean mkdir
+	$(CXX) $(DBGFLAGS) $(CSRC) -o $(BUILDD)/$(DBGFILE)
+	@printf "Run with:\n$(BUILDD)/$(DBGFILE)\n"
 
 test: clean mkdir
 	@printf "TODO: Implement tests\n"
