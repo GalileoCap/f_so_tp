@@ -12,7 +12,7 @@ Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, class GameMaster 
 
   switch (strat) { //A: Preparo la estrategia elegida
     case SECUENCIAL:
-      sem_init(&seq_sem, 1, 1);
+      seq_mtx.unlock();
       seq_turno = 0;
       break;
     case RR: break;
@@ -48,7 +48,7 @@ void Equipo::jugador(int nroJugador) {
 }
 
 void Equipo::secuencial(int nroJugador) {
-  sem_wait(&seq_sem); //A: Espero a mi turno
+  seq_mtx.lock(); //A: Espero a mi turno
   
   struct Pos to = (equipo == ROJO) ? Pos({4, 4}) : Pos({1, 1}); //TODO: Elegir de alguna manera
   moverseHacia(nroJugador, to);
@@ -58,7 +58,7 @@ void Equipo::secuencial(int nroJugador) {
     seq_turno = 0;
   }
 
-  sem_post(&seq_sem); //A: Dejo jugar a alguien más
+  seq_mtx.unlock(); //A: Dejo jugar a alguien más
 }
 
 void Equipo::roundRobin(int nroJugador) {

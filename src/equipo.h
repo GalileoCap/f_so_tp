@@ -5,7 +5,7 @@
 #include "gameMaster.h"
 
 #include <thread>
-#include <semaphore.h>
+#include <mutex>
 #include <vector>
 
 class Equipo {
@@ -31,7 +31,7 @@ class Equipo {
   std::vector<struct Pos> posiciones;
   std::vector<std::thread> threads;
 
-  sem_t seq_sem; //U: Semáforo para la estrategia secuencial
+  std::mutex seq_mtx; //U: Mutex para la estrategia secuencial
   int seq_turno; //U: Cantidad de jugadores que ya se movieron en la estrategia secuencial
 
   int quantum, quantumLeft;
