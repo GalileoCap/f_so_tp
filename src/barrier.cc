@@ -26,7 +26,9 @@ int Barrier::wait(void) {
 }
 
 void Barrier::post(int _msg) {
+  mtx.lock();
   msg = _msg;
   for (int i = 0; i < N; i++) //A: Let everyone through the first semaphore
     sem_post(&step[0]);
+  mtx.unlock();
 }
