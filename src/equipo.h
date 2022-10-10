@@ -34,6 +34,9 @@ class Equipo {
   std::mutex seq_mtx; //U: Mutex para la estrategia secuencial
   int seq_turno; //U: Cantidad de jugadores que ya se movieron en la estrategia secuencial
 
+  std::vector<std::mutex*> rr_mtx;
+  int rr_last;
+
   int quantum, quantumLeft;
 
   friend class GameMaster;

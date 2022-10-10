@@ -1,10 +1,11 @@
 #include "gameMaster.h"
 #include "config.h"
+#include "utils.h"
 
 #include <iostream>
 
-const estrategia strat = SECUENCIAL;
-const int quantum = 10;
+const estrategia strat = RR;
+const int quantum = 3;
 
 int main(void) {
   class Config config;

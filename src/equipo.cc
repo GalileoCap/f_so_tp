@@ -18,7 +18,15 @@ Equipo::Equipo(color _equipo, estrategia _strat, int _quantum, class GameMaster 
       seq_mtx.unlock();
       seq_turno = 0;
       break;
-    case RR: break;
+    case RR:
+      quantumLeft = quantum;
+      rr_mtx.resize(config.cantJugadores);
+      for (int i = 0; i < config.cantJugadores; i++) { //A: Inicio todos los mutex sin que los dejen pasar
+        rr_mtx[i] = new std::mutex();
+        rr_mtx[i]->lock();
+      }
+      rr_mtx[0]->unlock(); //A: Dejo pasar al primero
+      break;
     case SHORTEST: break;
     case USTEDES: break;
   }
@@ -72,6 +80,33 @@ void Equipo::secuencial(int nroJugador) {
 }
 
 void Equipo::roundRobin(int nroJugador) {
+  bool seguir = quantum > 0;
+  while (seguir) {
+    rr_mtx[nroJugador]->lock(); //A: Espero a mi turno //NOTA: Soy el único corriendo durante mi turno
+#ifdef DEBUG
+    std::cout << equipo << " " << nroJugador << " " << quantumLeft << " STEP" << std::endl;
+#endif // DEBUG
+
+    struct Pos to = (equipo == ROJO) ? Pos({4, 4}) : Pos({1, 1}); //TODO: Elegir de alguna manera
+    moverseHacia(nroJugador, to);
+
+    if (--quantumLeft == 0) { //A: Soy el último
+#ifdef DEBUG
+      std::cout << equipo << " " << nroJugador << " LAST" << std::endl;
+#endif // DEBUG
+      belcebu->terminoRonda(equipo); //A: Le aviso a belcebú
+      quantumLeft = quantum; //A: Reinicio el quantumLeft
+      rr_mtx[0]->unlock(); //A: Dejo pasar al primero para la siguiente ronda
+      break; //A: Salgo
+    } else { //A: Le toca al siguiente
+      seguir = quantumLeft >= threads.size(); //A: Queda suficiente quantum para que me vuelva a tocar
+      rr_mtx[(nroJugador + 1) % rr_mtx.size()]->unlock(); //A: Dejo pasar al siguiente
+    }
+  }
+
+#ifdef DEBUG
+  std::cout << equipo << " " << nroJugador << " END" << std::endl;
+#endif // DEBUG
 }
 
 void Equipo::shortestDistanceFirst(int nroJugador) {
