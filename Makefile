@@ -10,7 +10,7 @@ ENTREGA := Cappella_TODO_TODO_TODO.zip #TODO
 CXX := g++
 CFLAGS := -std=c++17 -Og -I$(SRCD) #TODO: O2
 DBGFLAGS := $(CFLAGS) -g -DDEBUG
-TESTFLAGS := $(CFLAGS) -g -DTESTING
+TESTFLAGS := $(DBGFLAGS) -DTESTING
 
 CSRC := $(wildcard $(SRCD)/**/*.cc $(SRCD)/*.cc)
 TEXSRC := ./informe/informe.tex
