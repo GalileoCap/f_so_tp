@@ -13,6 +13,10 @@ struct Pos Pos::mover(direccion dir) const {
   return pos;
 }
 
+bool Pos::operator==(const struct Pos& pos) const {
+  return x == pos.x && y == pos.y;
+}
+
 color contrincante(color equipo) {
   return (equipo == ROJO) ? AZUL : ROJO;
 }

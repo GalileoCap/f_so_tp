@@ -36,6 +36,8 @@ enum estrategia {
 
 struct Pos {
   struct Pos mover(direccion dir) const;
+  bool operator==(const struct Pos& pos) const;
+
   int x, y;
 };
 
