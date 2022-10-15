@@ -1,45 +1,51 @@
 #ifndef __EQUIPO_H__
 #define __EQUIPO_H__
 
-#include "utils.h"
 #include "gameMaster.h"
+#include "utils.h"
 
 #include <thread>
 #include <mutex>
 #include <vector>
 
 class Equipo {
-  Equipo(color _equipo, estrategia _strat, int _quantum, class GameMaster *_belcebu, class Config& config);
+public:
+  Equipo(class GameMaster *belcebu, color equipo, estrategia strat, int cantJugadores, int quantum, const std::vector<struct Pos>& posiciones);
 
   void comenzar(void);
   void terminar(void);
 
-  bool esperarBelcebu(void);
-
+private:
   void jugador(int nroJugador);
-  void secuencial(int nroJugador);
-  void roundRobin(int nroJugador);
-  void shortestDistanceFirst(int nroJugador);
-  void ustedes(int nroJugador);
 
   struct Pos buscarBanderaContraria(void);
-  void moverseHacia(int nroJugador, struct Pos to);
+  void moverse(int nroJugador);
 
   class GameMaster *belcebu; 
   color equipo;
   estrategia strat;
   std::vector<struct Pos> posiciones;
   std::vector<std::thread> threads;
+  int quantum, quantumLeft;
+  struct Pos banderaEnemiga;
 
-  std::mutex seq_mtx; //U: Mutex para la estrategia secuencial
-  int seq_turno; //U: Cantidad de jugadores que ya se movieron en la estrategia secuencial
+  //******************************
+  //S: Estrategias
+  //U: Secuencial
+  void secuencial(int nroJugador);
+  std::mutex seq_mtx;
+  int seq_turno; //U: Cantidad de jugadores que ya se movieron
 
+  //U: RR
+  void roundRobin(int nroJugador);
   std::vector<std::mutex*> rr_mtx;
   int rr_last;
 
-  int quantum, quantumLeft;
+  //U: SDF
+  void shortestDistanceFirst(int nroJugador);
 
-  friend class GameMaster;
+  //U: Nuestra
+  void ustedes(int nroJugador);
 };
 
 #endif // EQUIPO_H

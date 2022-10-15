@@ -6,14 +6,13 @@
 
 class Barrier {
 public:
-  Barrier(void);
-  Barrier(int _N);
+  Barrier(int N);
 
-  int wait(void);
-  void post(int _msg);
+  void wait(void);
+  void post(void);
 
 private:
-  int N, n, msg;
+  int N, n;
   std::mutex mtx;
   sem_t step[3];
 };

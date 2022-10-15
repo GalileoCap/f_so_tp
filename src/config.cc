@@ -13,13 +13,14 @@ Config::Config(void) {
     >> banderas[ROJO].x >> banderas[ROJO].y 
     >> banderas[AZUL].x >> banderas[AZUL].y;
 
-  jugadores[ROJO].resize(cantJugadores);
-  jugadores[AZUL].resize(cantJugadores);
+  posiciones[ROJO].resize(cantJugadores);
+  posiciones[AZUL].resize(cantJugadores);
 
   for (int i = 0; i < cantJugadores; i++)
-    config >> jugadores[ROJO][i].x >> jugadores[ROJO][i].y;
+    config >> posiciones[ROJO][i].x >> posiciones[ROJO][i].y;
   for (int i = 0; i < cantJugadores; i++)
-    config >> jugadores[AZUL][i].x >> jugadores[AZUL][i].y;
+    config >> posiciones[AZUL][i].x >> posiciones[AZUL][i].y;
 
   //TODO: Check invalid values
+  logMsg("CONFIG done\n"); //TODO: Better log
 };

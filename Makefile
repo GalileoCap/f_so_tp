@@ -7,7 +7,7 @@ DBGFILE := $(OFILE).debug
 ENTREGA := Cappella_TODO_TODO_TODO.zip #TODO
 
 CXX := g++
-CFLAGS := -Og -I$(SRCD)
+CFLAGS := -std=c++17 -Og -I$(SRCD) #TODO: O2
 DBGFLAGS := $(CFLAGS) -g -DDEBUG
 
 CSRC := $(wildcard $(SRCD)/**/*.cc $(SRCD)/*.cc)

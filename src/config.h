@@ -2,18 +2,15 @@
 #define CONFIG_H
 
 #include "utils.h"
-
 #include <vector>
 
-class Config {
-public:
+struct Config {
   Config(void);
 
-  std::vector<struct Pos> jugadores[2];
+  std::vector<struct Pos> posiciones[2];
   struct Pos banderas[2];
   int ancho, alto,
       cantJugadores;
-private:
 };
 
 #endif // CONFIG_H

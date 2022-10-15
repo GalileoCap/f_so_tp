@@ -1,11 +1,16 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#ifdef DEBUG
+#include <cstdio>
+#include <cstdarg>
+#endif // DEBUG
+
 #define EMPIEZA ROJO
 #define CONFIG_FPATH "./config/config_parameters.csv"
 
 enum direccion {
-  ARRIBA, ABAJO, IZQUIERDA, DERECHA, QUIETO
+  ARRIBA, ABAJO, IZQUIERDA, DERECHA
 };
 
 enum color {
@@ -30,6 +35,9 @@ struct Pos {
   int x, y;
 };
 
-color contrincante(color equipo);
+color contrincante(const color equipo);
+color bandera(const color equipo);
+
+void logMsg(const char msg[], ...);
 
 #endif // __UTILS_H__
