@@ -12,7 +12,7 @@ class GameMaster {
 public:
   GameMaster(const class Config& config);
   
-  void waitTurn(color equipo);
+  color waitTurn(color equipo);
   void moverJugador(direccion dir, int nroJugador);
   void terminoRonda(color equipo);
 

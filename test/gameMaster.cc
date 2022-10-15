@@ -8,6 +8,12 @@
 #include <vector>
 #include <semaphore.h>
 
+void consumeBarrier(class Barrier *barrier) { //TODO: Definirla en testutils.cc me da error de compilación, no se da cuenta que ahora todo es público
+  for (int i = 0; i < 3; i++)
+    for (int n = 0; n < barrier->N; n++)
+      sem_trywait(&barrier->step[i]);
+}
+
 TEST(GameMaster, init) {
   //******************************
   //S: Setup

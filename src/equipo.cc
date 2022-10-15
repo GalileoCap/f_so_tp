@@ -47,12 +47,15 @@ void Equipo::terminar(void) { //U: Espera a que terminen todos los jugadores de 
   logMsg("EQUIPO terminar equipo=%i\n", equipo);
 }
 
+bool Equipo::esperarBelcebu(void) {
+  return belcebu->waitTurn(equipo) != INDEFINIDO; //A: Espero a que le toque a mi equipo, devuelve true si se terminó el juego
+}
+
 void Equipo::jugador(int nroJugador) {
   while (true) {
     logMsg("EQUIPO jugador WAIT equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 
-    belcebu->waitTurn(equipo); //A: Espero a que le toque a mi equipo
-    if (belcebu->getGanador() != INDEFINIDO) break; //A: Si se terminó el juego termino acá
+    if (esperarBelcebu()) break;
 
     switch (strat) { //A: Aplico la estrategia elegida
       case SECUENCIAL: secuencial(nroJugador); break;

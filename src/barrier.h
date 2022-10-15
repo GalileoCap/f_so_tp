@@ -1,20 +1,22 @@
 #ifndef __BARRIER_H__
 #define __BARRIER_H__
 
+#include "utils.h"
+
 #include <mutex>
 #include <semaphore.h>
 
 class Barrier {
 public:
-  Barrier(int N);
+  Barrier(color equipo, int N);
 
-  void wait(void);
-  void post(void);
+  color wait(void);
+  void post(color _msg);
 
 #ifndef TEST
 private:
 #endif // TEST
-  int N, n;
+  int N, n; color equipo, msg;
   std::mutex mtx;
   sem_t step[3];
 };

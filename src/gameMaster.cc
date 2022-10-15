@@ -8,13 +8,13 @@ GameMaster::GameMaster(const class Config& config) {
     tablero[config.banderas[equipo].y][config.banderas[equipo].x] = bandera(equipo); //A: Pongo la bandera
     posiciones[equipo] = config.posiciones[equipo];
     for (const struct Pos& pos : posiciones[equipo]) tablero[pos.y][pos.x] = equipo; //A: Pongo a los jugadores
-    barriers[equipo] = new Barrier(config.cantJugadores);
+    barriers[equipo] = new Barrier(equipo, config.cantJugadores);
   }
 
   currEquipo = EMPIEZA;
   ganador = INDEFINIDO;
   sem_init(&semBandera, 1, 1); //A: Dejo que un sólo equipo busque la bandera
-  barriers[currEquipo]->post(); //A: Dejo que arranque un equipo
+  barriers[currEquipo]->post(ganador); //A: Dejo que arranque un equipo
 
   logMsg("GAMEMASTER done currEquipo=%i\n", currEquipo);
   logTablero();
@@ -42,16 +42,17 @@ void GameMaster::moverJugador(direccion dir, int nroJugador) {
 
 void GameMaster::terminoRonda(color equipo) {
   mtx.lock();
+  assert(equipo == currEquipo); //A: Solo nos puede pedir terminar el equipo al que le toca
 
   logMsg("GAMEMASTER terminoRonda equipo=%i, ganador=%i\n", equipo, ganador);
   logTablero();
 
   if (ganador == INDEFINIDO) { //A: Sigue el juego
     currEquipo = contrincante(equipo); //A: Cambio de equipo
-    barriers[currEquipo]->post(); //A: Le doy el turno
+    barriers[currEquipo]->post(ganador); //A: Le doy el turno
   } else { //A: Se terminó el juego
-    barriers[ROJO]->post(); //A: Dejo pasara a ambos equipos //NOTA: Ellos se enteran que ya se terminó 
-    barriers[AZUL]->post();
+    barriers[ROJO]->post(ganador); //A: Dejo pasara a ambos equipos
+    barriers[AZUL]->post(ganador);
   }
 
   mtx.unlock();
@@ -62,8 +63,8 @@ bool GameMaster::mePuedoMover(struct Pos pos, direccion dir) {
   return esPosicionValida(pos) && (isEmpty(pos) || hasFlag(pos, contrincante(currEquipo)));
 }
 
-void GameMaster::waitTurn(color equipo) {
-  barriers[equipo]->wait();
+color GameMaster::waitTurn(color equipo) {
+  return barriers[equipo]->wait();
 }
 
 color GameMaster::getGanador(void) {

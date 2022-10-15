@@ -2,13 +2,15 @@
 #include "testutils.h"
 
 #include "barrier.h"
+#include "utils.h"
 
 #include <semaphore.h>
 
 TEST(Barrier, init) {
-  int N = 3;
-  class Barrier barrier(N);
+  color equipo = ROJO; int N = 3;
+  class Barrier barrier(equipo, N);
 
+  EXPECT_EQ(barrier.equipo, equipo);
   EXPECT_EQ(barrier.N, N);
 
   //A: Empieza sin dejar pasar a nadie en ningún step
@@ -21,11 +23,16 @@ TEST(Barrier, init) {
 }
 
 TEST(Barrier, post) {
-  int N = 3;
-  class Barrier barrier(N);
+  color equipo = ROJO; int N = 3;
+  class Barrier barrier(equipo, N);
 
-  //A: Después de un post deja pasar a N sólo en el primer step
-  barrier.post();
+  color msg = ROJO;
+  barrier.post(msg);
+
+  //A: Mandó el mensaje correcto
+  EXPECT_EQ(barrier.msg, msg);
+
+  //A: Deja pasar a N sólo en el primer step
   int sval; sem_getvalue(&barrier.step[0], &sval); //TODO: getvalue error
   EXPECT_EQ(sval, N);
   sem_getvalue(&barrier.step[1], &sval); //TODO: getvalue error
