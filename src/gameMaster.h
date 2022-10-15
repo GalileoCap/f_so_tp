@@ -23,7 +23,9 @@ public:
   void tableroSize(int& height, int& width);
 
   sem_t semBandera;
+#ifndef TEST
 private:
+#endif // TEST
   bool esPosicionValida(const struct Pos& pos);
   bool isEmpty(const struct Pos& pos);
   bool hasFlag(const struct Pos& pos, color equipo);

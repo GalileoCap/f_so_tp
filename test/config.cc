@@ -20,12 +20,12 @@ TEST(Config, completo) {
 
   struct Config config;
 
-  ASSERT_EQ(config.ancho, ancho);
-  ASSERT_EQ(config.alto, alto);
-  ASSERT_EQ(config.cantJugadores, cantJugadores);
+  EXPECT_EQ(config.ancho, ancho);
+  EXPECT_EQ(config.alto, alto);
+  EXPECT_EQ(config.cantJugadores, cantJugadores);
   for (color equipo : {ROJO, AZUL}) {
-    ASSERT_EQ(config.banderas[equipo], banderas[equipo]);
-    ASSERT_EQ(config.posiciones[equipo], posiciones[equipo]);
+    EXPECT_EQ(config.banderas[equipo], banderas[equipo]);
+    EXPECT_EQ(config.posiciones[equipo], posiciones[equipo]);
   }
 }
 

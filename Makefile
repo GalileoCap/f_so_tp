@@ -18,8 +18,6 @@ TEXSRC := ./informe/informe.tex
 .PHONY: clean mkdir
 default: main
 
-all: clean main debug test entrega
-
 entrega: mkdir
 	zip $(BUILDD)/$(ENTREGA) informe.pdf Makefile README.md src test -r9
 

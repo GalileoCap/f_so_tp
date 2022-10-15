@@ -11,7 +11,9 @@ public:
   void wait(void);
   void post(void);
 
+#ifndef TEST
 private:
+#endif // TEST
   int N, n;
   std::mutex mtx;
   sem_t step[3];

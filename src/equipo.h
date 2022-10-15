@@ -19,7 +19,9 @@ public:
   void comenzar(void); //U: Busca las banderas y luego inicia a sus jugadores
   void terminar(void); //U: Espera a que terminen todos los jugadores de este equipo
 
+#ifndef TEST
 private:
+#endif // TEST
   void jugador(int nroJugador);
   void moverse(int nroJugador, const struct Pos& to); //U: Mueve al jugador hacia una posición
 
