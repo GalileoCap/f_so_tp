@@ -17,9 +17,10 @@ public:
 
 private:
   void jugador(int nroJugador);
+  void moverse(int nroJugador);
 
   struct Pos buscarBanderaContraria(void);
-  void moverse(int nroJugador);
+  void buscarThread(int height, int from, int to, bool& foundOurs, bool& foundEnemy);
 
   class GameMaster *belcebu; 
   color equipo;
@@ -27,7 +28,7 @@ private:
   std::vector<struct Pos> posiciones;
   std::vector<std::thread> threads;
   int quantum, quantumLeft;
-  struct Pos banderaEnemiga;
+  struct Pos banderas[2];
 
   //******************************
   //S: Estrategias

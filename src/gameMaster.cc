@@ -101,3 +101,8 @@ void GameMaster::logTablero(void) {
   }
   logMsg("\n");
 }
+
+void GameMaster::tableroSize(int& height, int& width) {
+  height = tablero.size();
+  width = (height > 0) ? tablero[0].size() : 0;
+}

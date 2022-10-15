@@ -20,6 +20,7 @@ public:
   bool mePuedoMover(struct Pos pos, direccion dir);
 
   color getGanador(void);
+  void tableroSize(int& height, int& width);
 
   sem_t semStart;
 private:

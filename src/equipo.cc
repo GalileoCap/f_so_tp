@@ -1,4 +1,5 @@
 #include "equipo.h"
+#include "utils.h"
 
 Equipo::Equipo(class GameMaster *belcebu, color equipo, estrategia strat, int cantJugadores, int quantum, const std::vector<struct Pos>& posiciones) : belcebu(belcebu), equipo(equipo), strat(strat), quantum(quantum), posiciones(posiciones) {
   threads.resize(cantJugadores);
@@ -31,7 +32,7 @@ void Equipo::comenzar(void) {
   logMsg("EQUIPO comenzar equipo=%i\n", equipo);
 
   sem_wait(&belcebu->semStart); //A: Espero a poder buscar la bandera
-  banderaEnemiga = buscarBanderaContraria();
+  buscarBanderaContraria();
   sem_post(&belcebu->semStart); //A: Dejo que el otro equipo busque la bandera
 
   logMsg("EQUIPO comenzar THREADS equipo=%i\n", equipo);
@@ -109,16 +110,45 @@ void Equipo::ustedes(int nroJugador) {
 }
 
 struct Pos Equipo::buscarBanderaContraria(void) {
-  struct Pos pos;
+  int height, width; belcebu->tableroSize(height, width);
+  bool found[2] = {false, false};
 
-  pos = (equipo == ROJO) ? Pos({4, 4}) : Pos({1, 1}); //TODO
+  const auto processorCount = std::thread::hardware_concurrency();
+  std::vector<std::thread> searchThreads((width > processorCount ? processorCount : width));
+  int block = width / searchThreads.size();
+  for (int i = 0; i < searchThreads.size(); i++) {
+    int from = block * i, to = std::min(from + block + 1, width); //TODO: Revisar redondeo
+    searchThreads[i] = std::thread(&Equipo::buscarThread, this, height, from, to, std::ref(found[equipo]), std::ref(found[contrincante(equipo)]));
+  }
+  for (int i = 0; i < searchThreads.size(); i++)
+    searchThreads[i].join();
 
-  logMsg("EQUIPO buscarBanderaContraria equipo=%i, pos=(%i, %i)\n", equipo, pos.x, pos.y);
-  return pos;
+  struct Pos posNuestra = banderas[equipo],
+             posEnemigo = banderas[contrincante(equipo)];
+  logMsg("EQUIPO buscarBanderaContraria equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i), threads=%i\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
+  return posEnemigo;
+}
+
+void Equipo::buscarThread(int height, int from, int to, bool& foundOurs, bool& foundEnemy) {
+  logMsg("EQUIPO buscarThread from=%i, to=%i\n", from, to);
+  for (int x = from; x < to && !(foundOurs && foundEnemy); x++) //A: Recorro mi porción del tablero
+    for (int y = 0; y < height && !(foundOurs && foundEnemy); y++) {
+    struct Pos pos({x, y});
+    //logMsg("EQUIPO buscarThread TRY nroThread=%i, pos=(%i, %i)\n", pos.x, pos.y);
+    color enPos = belcebu->enPosicion(pos);
+    if (enPos == bandera(equipo)) {
+      foundOurs = true;
+      banderas[equipo] = pos;
+    } else if (enPos == bandera(contrincante(equipo))) {
+      foundEnemy = true;
+      banderas[contrincante(equipo)] = pos;
+    }
+  }
 }
 
 void Equipo::moverse(int nroJugador) {
-  struct Pos from = posiciones[nroJugador];
+  struct Pos from = posiciones[nroJugador],
+             banderaEnemiga = banderas[contrincante(equipo)];
 
   direccion dir;
   if (from.x > banderaEnemiga.x && belcebu->mePuedoMover(from, IZQUIERDA)) dir = IZQUIERDA;
