@@ -57,6 +57,8 @@ TEST(GameMaster, moverJugador) {
              newPos = prevPos.mover(dir);
 
   belcebu.moverJugador(dir, nroJugador);
+  tablero[prevPos.y][prevPos.x] = VACIO;
+  tablero[newPos.y][newPos.x] = equipo;
 
   //A: Actualizó la posición correcta
   EXPECT_EQ(belcebu.posiciones[equipo][nroJugador], newPos);
@@ -67,6 +69,7 @@ TEST(GameMaster, moverJugador) {
   //A: Actualizó al ganador correctamente
   EXPECT_EQ(belcebu.getGanador(), equipo);
 
+  //TODO: Movimiento no-ganador
   //TODO: Movimiento inválido
 }
 
@@ -126,10 +129,10 @@ TEST(GameMaster, mePuedoMover) {
   //S: Setup
 
   int ancho = 3, alto = 3, cantJugadores = 2;
-  struct Pos banderas[2] = {{0, 0}, {2, 2}};
+  struct Pos banderas[2] = {{2, 2}, {0, 0}};
   std::vector<struct Pos> posiciones[2] = {
-    {{1, 0}, {1, 2}},
-    {{0, 2}, {1, 1}}
+    {{0, 2}, {1, 1}},
+    {{1, 0}, {1, 2}}
   };
   createConfig(ancho, alto, cantJugadores, banderas, posiciones);
 
