@@ -116,7 +116,7 @@ TEST(GameMaster, terminoRonda) {
 
   //A: Deja pasar a ambos equipos
   EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), config.cantJugadores);
-  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[1]), config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), config.cantJugadores);
 }
 
 TEST(GameMaster, enPosicion) {
