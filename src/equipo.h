@@ -49,6 +49,10 @@ private:
   int rr_last;
 
   void shortestDistanceFirst(int nroJugador);
+  std::vector<int> sdf_distances;
+  sem_t sdf_step[2];
+  std::mutex sdf_mtx;
+  int sdf_turno, sdf_closest;
 
   void ustedes(int nroJugador);
 };

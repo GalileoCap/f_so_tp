@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <cmath>
 
 struct Pos Pos::mover(direccion dir) const {
   struct Pos pos = *this;
@@ -15,6 +16,10 @@ struct Pos Pos::mover(direccion dir) const {
 
 bool Pos::operator==(const struct Pos& pos) const {
   return x == pos.x && y == pos.y;
+}
+
+int Pos::distance(const struct Pos& pos) const { //A: Distancia Manhattan
+  return std::abs(x - pos.x) + std::abs(y - pos.y);
 }
 
 color contrincante(color equipo) {

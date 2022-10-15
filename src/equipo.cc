@@ -23,7 +23,12 @@ Equipo::Equipo(
       rr_mtx[0]->unlock(); //A: Dejo pasar al primero
       break;
 
-    case SHORTEST: break; //TODO
+    case SHORTEST:
+      sdf_distances.resize(cantJugadores);
+      sem_init(&sdf_step[0], 1, 0); //A: Inicio los semáforos sin dejar pasar
+      sem_init(&sdf_step[1], 1, 0);
+      sdf_turno = 0;
+      break;
 
     case USTEDES: break; //TODO
   }
@@ -130,7 +135,28 @@ void Equipo::roundRobin(int nroJugador) {
 }
 
 void Equipo::shortestDistanceFirst(int nroJugador) {
-  //TODO
+  sdf_distances[nroJugador] = posiciones[nroJugador].distance(banderas[contrincante(equipo)]); //A: Calculo mi distancia //NOTA: Como todos sólo modifican su propio valor, no es parte del area crítica
+  sdf_closest = 0; //A: Reinicio el closest //NOTA: Como todos ponen el mismo valor, no pertenece al area crítica
+  sdf_mtx.lock();
+  if (++sdf_turno == threads.size()) //A: Soy el último
+    for (int i = 0; i < threads.size(); i++) sem_post(&sdf_step[0]); //A: Dejo pasar a todos
+  sdf_mtx.unlock();
+  sem_wait(&sdf_step[0]);
+
+  sdf_mtx.lock();
+  if (sdf_distances[nroJugador] < sdf_distances[sdf_closest]) sdf_closest = nroJugador; //A: Si soy el más cercano hasta ahora, me anoto
+
+  if (--sdf_turno == 0) //A: Soy el último
+    for (int i = 0; i < threads.size(); i++) sem_post(&sdf_step[1]); //A: Dejo pasar a todos
+  sdf_mtx.unlock();
+  sem_wait(&sdf_step[1]);
+
+  if (nroJugador == sdf_closest) { //A: Soy el más cercano
+    moverse(nroJugador, banderas[contrincante(equipo)]);
+    belcebu->terminoRonda(equipo);
+  }
+
+  //TODO: ¿Se hace esto hasta agotar el quantum?
 }
 
 void Equipo::ustedes(int nroJugador) {

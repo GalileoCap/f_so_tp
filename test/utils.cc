@@ -29,6 +29,16 @@ TEST(Utils, posEq) {
   EXPECT_FALSE(pos == Pos({1, 1}));
 }
 
+TEST(Utils, posDistance) {
+  struct Pos pos({0, 0});
+
+  EXPECT_EQ(pos.distance(pos), 0);
+  EXPECT_EQ(pos.distance({1, 0}), 1);
+  EXPECT_EQ(pos.distance({-1, 0}), 1);
+  EXPECT_EQ(pos.distance({1, 1}), 2);
+  EXPECT_EQ(pos.distance({1, -1}), 2);
+}
+
 TEST(Utils, contrincante) {
   EXPECT_EQ(contrincante(ROJO), AZUL);
   EXPECT_EQ(contrincante(AZUL), ROJO);
