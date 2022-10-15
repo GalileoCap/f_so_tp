@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-const estrategia strat = SECUENCIAL;
+const estrategia strat = RR;
 const int quantum = 3;
 
 int main(void) {

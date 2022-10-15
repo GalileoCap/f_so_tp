@@ -110,10 +110,10 @@ void Equipo::secuencial(int nroJugador) {
 }
 
 void Equipo::roundRobin(int nroJugador) {
-  bool seguir = quantum > 0;
+  bool seguir = nroJugador < quantum;
   while (seguir) {
     rr_mtx[nroJugador]->lock(); //A: Espero a mi turno //NOTA: Soy el único corriendo durante mi turno
-    logMsg("EQUIPO roundRobin STEP equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+    logMsg("EQUIPO roundRobin STEP equipo=%i, nroJugador=%i, quantumLeft=%i\n", equipo, nroJugador, quantumLeft);
 
     moverse(nroJugador, banderas[contrincante(equipo)]); //TODO: Hacia otro lugar?
 
