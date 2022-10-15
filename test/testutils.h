@@ -16,5 +16,6 @@ tablero_t simpleSetup(void);
 tablero_t fullSetup(void);
 
 void consumeBarrier(class Barrier *barrier);
+int getSemValue(sem_t *sem);
 
 #endif // __TESTUTILS_H__

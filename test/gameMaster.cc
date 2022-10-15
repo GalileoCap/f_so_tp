@@ -36,14 +36,11 @@ TEST(GameMaster, init) {
   EXPECT_EQ(belcebu.currEquipo, EMPIEZA); //A: Empieza el equipo correcto
   EXPECT_EQ(belcebu.getGanador(), INDEFINIDO); //A: Empieza sin haber ganado alguien
 
-  int sval; sem_getvalue(&belcebu.semBandera, &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 1); //A: Sólo deja que uno busque la bandera
+  EXPECT_EQ(getSemValue(&belcebu.semBandera), 1); //A: Sólo deja que uno busque la bandera
 
   //A: Sólo dejó empezar al equipo que empieza
-  sem_getvalue(&belcebu.barriers[EMPIEZA]->step[0], &sval);
-  EXPECT_EQ(sval, config.cantJugadores);
-  sem_getvalue(&belcebu.barriers[contrincante(EMPIEZA)]->step[0], &sval);
-  EXPECT_EQ(sval, 0);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[EMPIEZA]->step[0]), config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(EMPIEZA)]->step[0]), 0);
 }
 
 TEST(GameMaster, moverJugador) {
@@ -93,23 +90,33 @@ TEST(GameMaster, terminoRonda) {
 
   color equipo = belcebu.currEquipo;
 
+  consumeBarrier(belcebu.barriers[equipo]);
   belcebu.terminoRonda(equipo);
 
   //A: Le toca al nuevo equipo
   EXPECT_EQ(belcebu.currEquipo, contrincante(equipo));
 
   //A: Deja pasar al equipo correcto
-  int sval; sem_getvalue(&belcebu.barriers[contrincante(equipo)]->step[0], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), 0);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), config.cantJugadores);
 
-  belcebu.moverJugador(ARRIBA, 0); //NOTA: Movida ganadora
+  consumeBarrier(belcebu.barriers[contrincante(equipo)]);
   belcebu.terminoRonda(contrincante(equipo));
 
+  //A: Le vuelve a tocar al primer equipo
+  EXPECT_EQ(belcebu.currEquipo, equipo);
+
+  //A: Nuevamente deja pasar al equipo correcto
+  EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), 0);
+
+  belcebu.moverJugador(ARRIBA, 0); //NOTA: Movida ganadora
+  consumeBarrier(belcebu.barriers[equipo]);
+  belcebu.terminoRonda(equipo);
+
   //A: Deja pasar a ambos equipos
-  sem_getvalue(&belcebu.barriers[equipo]->step[0], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 2 * config.cantJugadores); //NOTA: Como no hubo waits, va a dejar pasar al doble //TODO: Consumirlos
-  sem_getvalue(&belcebu.barriers[contrincante(equipo)]->step[1], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 2 * config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[1]), config.cantJugadores);
 }
 
 TEST(GameMaster, enPosicion) {

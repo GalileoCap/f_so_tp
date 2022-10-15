@@ -1,4 +1,6 @@
 #include "testutils.h"
+#include <semaphore.h>
+#include <assert.h>
 
 void createConfig(int ancho, int alto, int cantJugadores, struct Pos banderas[2], std::vector<struct Pos> posiciones[2]) {
   std::ofstream config(CONFIG_FPATH);
@@ -38,4 +40,10 @@ tablero_t fullSetup(void) {
     {VACIO, VACIO, VACIO},
     {AZUL, AZUL, BANDERA_AZUL}
   };
+}
+
+int getSemValue(sem_t *sem) {
+  int sval;
+  assert(sem_getvalue(sem, &sval) == 0);
+  return sval;
 }

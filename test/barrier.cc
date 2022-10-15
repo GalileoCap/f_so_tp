@@ -14,12 +14,9 @@ TEST(Barrier, init) {
   EXPECT_EQ(barrier.N, N);
 
   //A: Empieza sin dejar pasar a nadie en ningún step
-  int sval; sem_getvalue(&barrier.step[0], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 0);
-  sem_getvalue(&barrier.step[1], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 0);
-  sem_getvalue(&barrier.step[2], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 0);
+  EXPECT_EQ(getSemValue(&barrier.step[0]), 0);
+  EXPECT_EQ(getSemValue(&barrier.step[1]), 0);
+  EXPECT_EQ(getSemValue(&barrier.step[2]), 0);
 }
 
 TEST(Barrier, post) {
@@ -33,12 +30,9 @@ TEST(Barrier, post) {
   EXPECT_EQ(barrier.msg, msg);
 
   //A: Deja pasar a N sólo en el primer step
-  int sval; sem_getvalue(&barrier.step[0], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, N);
-  sem_getvalue(&barrier.step[1], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 0);
-  sem_getvalue(&barrier.step[2], &sval); //TODO: getvalue error
-  EXPECT_EQ(sval, 0);
+  EXPECT_EQ(getSemValue(&barrier.step[0]), N);
+  EXPECT_EQ(getSemValue(&barrier.step[1]), 0);
+  EXPECT_EQ(getSemValue(&barrier.step[2]), 0);
 }
 
 //TODO: Wait
