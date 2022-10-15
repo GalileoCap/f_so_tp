@@ -8,18 +8,18 @@ Config::Config(void) {
     std::cerr << "Error: el archivo no pudo ser abierto" << std::endl;
     exit(1);
   }
+
   config >> ancho >> alto
     >> cantJugadores
     >> banderas[ROJO].x >> banderas[ROJO].y 
     >> banderas[AZUL].x >> banderas[AZUL].y;
 
-  posiciones[ROJO].resize(cantJugadores);
-  posiciones[AZUL].resize(cantJugadores);
-
-  for (int i = 0; i < cantJugadores; i++)
-    config >> posiciones[ROJO][i].x >> posiciones[ROJO][i].y;
-  for (int i = 0; i < cantJugadores; i++)
-    config >> posiciones[AZUL][i].x >> posiciones[AZUL][i].y;
+  for (color equipo : {ROJO, AZUL}) { //A: Leo las posiciones de ambos equipos
+    posiciones[equipo].resize(cantJugadores);
+    for (int i = 0; i < cantJugadores; i++) {
+      config >> posiciones[equipo][i].x >> posiciones[equipo][i].y;
+    }
+  }
 
   //TODO: Check invalid values
   logMsg("CONFIG done\n"); //TODO: Better log

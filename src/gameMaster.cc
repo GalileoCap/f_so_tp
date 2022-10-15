@@ -1,9 +1,10 @@
 #include "gameMaster.h"
+#include <assert.h>
 
 GameMaster::GameMaster(const class Config& config) {
   tablero.resize(config.alto, std::vector<color> (config.ancho, VACIO)); //A: Inicio el tablero vacío
 
-  for (color equipo : { ROJO, AZUL}) {
+  for (color equipo : { ROJO, AZUL}) { //A: Guardo los datos de ambos equipos
     tablero[config.banderas[equipo].y][config.banderas[equipo].x] = bandera(equipo); //A: Pongo la bandera
     posiciones[equipo] = config.posiciones[equipo];
     for (const struct Pos& pos : posiciones[equipo]) tablero[pos.y][pos.x] = equipo; //A: Pongo a los jugadores
@@ -12,25 +13,23 @@ GameMaster::GameMaster(const class Config& config) {
 
   currEquipo = EMPIEZA;
   ganador = INDEFINIDO;
-  barriers[currEquipo]->post(); //A: Empieza un equipo
-  sem_init(&semStart, 1, 1);
+  sem_init(&semBandera, 1, 1); //A: Dejo que un sólo equipo busque la bandera
+  barriers[currEquipo]->post(); //A: Dejo que arranque un equipo
 
   logMsg("GAMEMASTER done currEquipo=%i\n", currEquipo);
   logTablero();
 }
 
 void GameMaster::moverJugador(direccion dir, int nroJugador) {
-  mtx.lock();
+  mtx.lock(); //A: Sólo se mueve un jugador a la vez
   struct Pos pos = posiciones[currEquipo][nroJugador],
              newPos = pos.mover(dir);
   
-  //TODO: assert newPos
   if (ganador == INDEFINIDO) { //A: Sigue el juego
-    bool valid = mePuedoMover(pos, dir);
-    //TODO: assert valid
+    assert(mePuedoMover(pos, dir)); //A: El jugador se tendría que asegurar que se valga
     
-    if (!valid) { logMsg("GAMEMASTER moverJugador INVALIDO\n"); while (true); }
-    if (hasFlag(newPos, contrincante(currEquipo))) ganador = currEquipo; //A: Ganaron
+    if (hasFlag(newPos, contrincante(currEquipo))) //A: Ganaron
+      ganador = currEquipo;
 
     //A: Actualizo el tablero
     posiciones[currEquipo][nroJugador] = newPos;
@@ -46,15 +45,37 @@ void GameMaster::terminoRonda(color equipo) {
 
   logMsg("GAMEMASTER terminoRonda equipo=%i, ganador=%i\n", equipo, ganador);
   logTablero();
+
   if (ganador == INDEFINIDO) { //A: Sigue el juego
     currEquipo = contrincante(equipo); //A: Cambio de equipo
     barriers[currEquipo]->post(); //A: Le doy el turno
   } else { //A: Se terminó el juego
-    barriers[ROJO]->post(); //A: Le aviso a ambos equipos
+    barriers[ROJO]->post(); //A: Dejo pasara a ambos equipos //NOTA: Ellos se enteran que ya se terminó 
     barriers[AZUL]->post();
   }
 
   mtx.unlock();
+}
+
+bool GameMaster::mePuedoMover(struct Pos pos, direccion dir) {
+  pos = pos.mover(dir);
+  return esPosicionValida(pos) && (isEmpty(pos) || hasFlag(pos, contrincante(currEquipo)));
+}
+
+void GameMaster::waitTurn(color equipo) {
+  barriers[equipo]->wait();
+}
+
+color GameMaster::getGanador(void) {
+  mtx.lock(); //TODO: Necesitamos este mtx?
+  color res = ganador;
+  mtx.unlock();
+  return res;
+}
+
+void GameMaster::tableroSize(int& height, int& width) {
+  height = tablero.size();
+  width = (height > 0) ? tablero[0].size() : 0;
 }
 
 color GameMaster::enPosicion(const struct Pos &pos) {
@@ -73,23 +94,6 @@ bool GameMaster::esPosicionValida(const struct Pos& pos) {
   return 0 <= pos.y && pos.y < tablero.size() && 0 <= pos.x && pos.x < tablero[0].size();
 }
 
-bool GameMaster::mePuedoMover(struct Pos pos, direccion dir) {
-  pos = pos.mover(dir);
-  return esPosicionValida(pos) && (isEmpty(pos) || hasFlag(pos, contrincante(currEquipo)));
-}
-
-void GameMaster::waitTurn(color equipo) {
-  //TODO: assert color
-  barriers[equipo]->wait();
-}
-
-color GameMaster::getGanador(void) {
-  mtx.lock();
-  color res = ganador;
-  mtx.unlock();
-  return res;
-}
-
 void GameMaster::logTablero(void) {
   for (int i = 0; i < tablero.size(); i++) {
     for (int j = 0; j < tablero[0].size(); j++) {
@@ -100,9 +104,4 @@ void GameMaster::logTablero(void) {
     logMsg("\n");
   }
   logMsg("\n");
-}
-
-void GameMaster::tableroSize(int& height, int& width) {
-  height = tablero.size();
-  width = (height > 0) ? tablero[0].size() : 0;
 }

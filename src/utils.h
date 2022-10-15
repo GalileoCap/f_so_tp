@@ -35,9 +35,9 @@ struct Pos {
   int x, y;
 };
 
-color contrincante(const color equipo);
-color bandera(const color equipo);
+color contrincante(color equipo);
+color bandera(color equipo);
 
-void logMsg(const char msg[], ...);
+void logMsg(const char msg[], ...); //U: Imprime un mensaje sólo si estamos en modo debug
 
 #endif // __UTILS_H__

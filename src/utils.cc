@@ -14,16 +14,14 @@ struct Pos Pos::mover(direccion dir) const {
 }
 
 color contrincante(color equipo) {
-  //TODO: Assert
   return (equipo == ROJO) ? AZUL : ROJO;
 }
 
-color bandera(const color equipo) {
-  //TODO: Assert
+color bandera(color equipo) {
   return (equipo == ROJO) ? BANDERA_ROJA : BANDERA_AZUL;
 }
 
-void logMsg(const char msg[], ...) {
+void logMsg(const char msg[], ...) { //U: Imprime un mensaje sólo si estamos en modo debug
 #ifdef DEBUG
   va_list args;
   va_start(args, msg);

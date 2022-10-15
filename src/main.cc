@@ -11,7 +11,7 @@ const int quantum = 3;
 int main(void) {
   logMsg("MAIN strat=%i quantum=%i\n", strat, quantum);
 
-  struct Config config;
+  class Config config;
   class GameMaster belcebu(config);
 
   class Equipo rojo(&belcebu, ROJO, strat, config.cantJugadores, quantum, config.posiciones[ROJO]),

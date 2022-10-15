@@ -22,7 +22,7 @@ public:
   color getGanador(void);
   void tableroSize(int& height, int& width);
 
-  sem_t semStart;
+  sem_t semBandera;
 private:
   bool esPosicionValida(const struct Pos& pos);
   bool isEmpty(const struct Pos& pos);
@@ -35,7 +35,7 @@ private:
   std::vector<std::vector<color>> tablero;
 
   std::mutex mtx;
-  class Barrier *barriers[2]; //TODO: No punteros
+  class Barrier *barriers[2]; //TODO: No punteros, tira un error de compilación si no lo son
 };
 
 #endif // __GAMEMASTER_H__
