@@ -176,7 +176,7 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
   const auto processorCount = std::thread::hardware_concurrency(); //A: Me fijo cuantos threads máximo puedo usar //NOTA: Devuelve 0 si no se puede averiguar por alguna razón
   std::vector<std::thread> searchThreads((width > processorCount ? processorCount : width)); //A: Limito los threads al ancho del tablero //TODO: Dividir a lo ancho y a lo alto, para no limitar así //NOTA: Si processorCount es 0 también se limita
 
-  int block = width / searchThreads.size(); //U: Ancho del bloque que va revisar cada thread //TODO: Revisar redondeo
+  int block = width / searchThreads.size() + 1; //U: Ancho del bloque que va revisar cada thread //NOTA: +1 por si hay errores de redondeo
   for (int i = 0; i < searchThreads.size(); i++) { //A: Creo los threads
     int from = block * i, to = std::min(from + block, width);
     searchThreads[i] = std::thread(
@@ -188,7 +188,7 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
 
   struct Pos posNuestra = banderas[equipo],
              posEnemigo = banderas[contrincante(equipo)];
-  logMsg("EQUIPO buscarBanderas equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i), threads=%i\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
+  logMsg("EQUIPO buscarBanderas equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i)\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
 
   sem_post(&belcebu->semBandera); //A: Dejo que el otro equipo busque la bandera //NOTA: El segundo equipo en buscarla va hacer un post que puede ser ignorado ya que nadie va a esperarlo
 }
