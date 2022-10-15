@@ -3,6 +3,8 @@
 ## Integrantes
 
 - Cappella Lewi, F. Galileo, 653/20
+- Manso, Daiana, 41/18
+- Roth, Francisco, 127/19
 TODO
 
 ## Instrucciones
