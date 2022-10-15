@@ -7,7 +7,11 @@
 #endif // DEBUG
 
 #define EMPIEZA ROJO
+#ifndef TESTING
 #define CONFIG_FPATH "./config/config_parameters.csv"
+#else
+#define CONFIG_FPATH "./test/config_parameters.csv"
+#endif // TESTING
 
 enum direccion {
   ARRIBA, ABAJO, IZQUIERDA, DERECHA
