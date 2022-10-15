@@ -17,7 +17,7 @@ Equipo::Equipo(
       quantumLeft = quantum;
       rr_mtx.reserve(cantJugadores);
       for (int i = 0; i < cantJugadores; i++) { //A: Inicio todos los mutex sin que los dejen pasar
-        rr_mtx.emplace_back();
+        rr_mtx.push_back(new std::mutex);
         rr_mtx[i]->lock();
       }
       rr_mtx[0]->unlock(); //A: Dejo pasar al primero
