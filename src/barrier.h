@@ -18,7 +18,7 @@ private:
 #endif // TEST
   int N, n; color equipo, msg;
   std::mutex mtx;
-  sem_t step[3];
+  sem_t step[4];
 };
 
 #endif // __BARRIER_H__
