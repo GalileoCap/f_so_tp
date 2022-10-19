@@ -17,7 +17,7 @@ GameMaster::GameMaster(const class Config& config) {
   barriers[currEquipo]->post(ganador); //A: Dejo que arranque un equipo
 
   logMsg("GAMEMASTER done currEquipo=%i\n", currEquipo);
-  logTablero();
+  //logTablero();
 }
 
 void GameMaster::moverJugador(direccion dir, int nroJugador) {
@@ -42,11 +42,10 @@ void GameMaster::moverJugador(direccion dir, int nroJugador) {
 
 void GameMaster::terminoRonda(color equipo) {
   mtx.lock();
-  assert(equipo == currEquipo); //A: Solo nos puede pedir terminar el equipo al que le toca
-
   logMsg("GAMEMASTER terminoRonda equipo=%i, ganador=%i\n", equipo, ganador);
   logTablero();
 
+  assert(equipo == currEquipo); //A: Solo nos puede pedir terminar el equipo al que le toca
   if (ganador == INDEFINIDO) { //A: Sigue el juego
     currEquipo = contrincante(equipo); //A: Cambio de equipo
     barriers[currEquipo]->post(ganador); //A: Le doy el turno

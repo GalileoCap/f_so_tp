@@ -33,15 +33,15 @@ Equipo::Equipo(
     case USTEDES: break; //TODO
   }
 
-  logMsg("EQUIPO DONE equipo=%i\n", equipo);
+  logMsg("[Equipo] DONE equipo=%i, strat=%i\n", equipo, strat);
 }
 
 void Equipo::comenzar(void) { //U: Busca las banderas y luego inicia a sus jugadores
-  logMsg("EQUIPO comenzar equipo=%i\n", equipo);
+  logMsg("[comenzar] equipo=%i\n", equipo);
 
   buscarBanderas();
 
-  logMsg("EQUIPO comenzar THREADS equipo=%i\n", equipo);
+  logMsg("[comenzar] THREADS equipo=%i\n", equipo);
   for (int i = 0; i < posiciones.size(); i++) //A: Creo los threads de mis jugadores
     threads.emplace_back(&Equipo::jugador, this, i);
 }
@@ -49,7 +49,7 @@ void Equipo::comenzar(void) { //U: Busca las banderas y luego inicia a sus jugad
 void Equipo::terminar(void) { //U: Espera a que terminen todos los jugadores de este equipo
   for (auto& t : threads) t.join();
 
-  logMsg("EQUIPO terminar equipo=%i\n", equipo);
+  logMsg("[terminar] equipo=%i\n", equipo);
 }
 
 bool Equipo::esperarBelcebu(void) {
@@ -58,7 +58,7 @@ bool Equipo::esperarBelcebu(void) {
 
 void Equipo::jugador(int nroJugador) {
   while (true) {
-    logMsg("EQUIPO jugador WAIT equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+    logMsg("[jugador] WAIT equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 
     if (esperarBelcebu()) break;
 
@@ -70,7 +70,7 @@ void Equipo::jugador(int nroJugador) {
     }
   }
 
-  logMsg("EQUIPO jugador END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+  logMsg("[jugador] END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 }
 
 void Equipo::moverse(int nroJugador, const struct Pos& to) { //U: Mueve al jugador hacia una posición
@@ -81,9 +81,10 @@ void Equipo::moverse(int nroJugador, const struct Pos& to) { //U: Mueve al jugad
   else if (from.x < to.x && belcebu->mePuedoMover(from, DERECHA)) dir = DERECHA;
   else if (from.y < to.y && belcebu->mePuedoMover(from, ARRIBA)) dir = ARRIBA;
   else if (from.y > to.y && belcebu->mePuedoMover(from, ABAJO)) dir = ABAJO;
+  //TODO: else if (mePuedoMoverAlguna) dir = movidaValidaRandom
   else /* from == to || noMePuedoMover */ return;
 
-  logMsg("EQUIPO moverse equipo=%i, nroJugador=%i, from=(%i, %i), dir=%i\n", equipo, nroJugador, from.x, from.y, dir);
+  logMsg("[moverse] equipo=%i, nroJugador=%i, from=(%i, %i), dir=%i\n", equipo, nroJugador, from.x, from.y, dir);
 
   posiciones[nroJugador] = from.mover(dir); //A: Actualizo la posición
   belcebu->moverJugador(dir, nroJugador); //A: Le pido a belcebú que me mueva
@@ -94,18 +95,18 @@ void Equipo::moverse(int nroJugador, const struct Pos& to) { //U: Mueve al jugad
 
 void Equipo::secuencial(int nroJugador) {
   seq_mtx.lock(); //A: Espero a mi turno
-  logMsg("EQUIPO secuencial STEP equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+  logMsg("[secuencial] STEP equipo=%i, nroJugador=%i\n", equipo, nroJugador);
   
   moverse(nroJugador, banderas[contrincante(equipo)]);
 
   if (++seq_turno == threads.size()) { //A: Soy el último
-    logMsg("EQUIPO secuencial LAST equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+    logMsg("[secuencial] LAST equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 
     belcebu->terminoRonda(equipo); //A: Le aviso a belcebu
     seq_turno = 0;
   }
 
-  logMsg("EQUIPO secuencial END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+  logMsg("[secuencial] END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
   seq_mtx.unlock(); //A: Dejo jugar a alguien más
 }
 
@@ -113,12 +114,12 @@ void Equipo::roundRobin(int nroJugador) {
   bool seguir = nroJugador < quantum;
   while (seguir) {
     rr_mtx[nroJugador]->lock(); //A: Espero a mi turno //NOTA: Soy el único corriendo durante mi turno
-    logMsg("EQUIPO roundRobin STEP equipo=%i, nroJugador=%i, quantumLeft=%i\n", equipo, nroJugador, quantumLeft);
+    logMsg("[roundRobin] STEP equipo=%i, nroJugador=%i, quantumLeft=%i\n", equipo, nroJugador, quantumLeft);
 
-    moverse(nroJugador, banderas[contrincante(equipo)]); //TODO: Hacia otro lugar?
+    moverse(nroJugador, banderas[contrincante(equipo)]);
 
     if (--quantumLeft == 0) { //A: Soy el último
-      logMsg("EQUIPO roundRobin LAST equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+      logMsg("[roundRobin] LAST equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 
       belcebu->terminoRonda(equipo); //A: Le aviso a belcebú
       quantumLeft = quantum; //A: Reinicio el quantumLeft
@@ -131,7 +132,7 @@ void Equipo::roundRobin(int nroJugador) {
     }
   }
 
-  logMsg("EQUIPO roundRobin END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+  logMsg("[roundRobin] END equipo=%i, nroJugador=%i\n", equipo, nroJugador);
 }
 
 void Equipo::shortestDistanceFirst(int nroJugador) {
@@ -168,7 +169,7 @@ void Equipo::ustedes(int nroJugador) {
 
 void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
   sem_wait(&belcebu->semBandera); //A: Espero a mi turno de buscar la bandera
-  logMsg("EQUIPO buscarBanderas equipo=%i\n", equipo);
+  logMsg("[buscarBanderas] equipo=%i\n", equipo);
 
   int height, width; belcebu->tableroSize(height, width);
   bool found[2] = {false, false}; //U: True cuando se encontró a esa bandera
@@ -188,13 +189,13 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
 
   struct Pos posNuestra = banderas[equipo],
              posEnemigo = banderas[contrincante(equipo)];
-  logMsg("EQUIPO buscarBanderas equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i)\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
+  logMsg("[buscarBanderas] equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i)\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
 
   sem_post(&belcebu->semBandera); //A: Dejo que el otro equipo busque la bandera //NOTA: El segundo equipo en buscarla va hacer un post que puede ser ignorado ya que nadie va a esperarlo
 }
 
 void Equipo::buscarThread(int height, int from, int to, bool& foundOurs, bool& foundEnemy) { //U: Cada thread recorre una porción del tablero hasta terminar o que entre todos hayan encontrado ambas banderas
-  logMsg("EQUIPO buscarThread from=%i, to=%i\n", from, to);
+  logMsg("[buscarThread] from=%i, to=%i\n", from, to);
 
   for (int x = from; x < to && !(foundOurs && foundEnemy); x++) //A: Recorro el tablero
     for (int y = 0; y < height && !(foundOurs && foundEnemy); y++) {
