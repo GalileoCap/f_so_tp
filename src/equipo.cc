@@ -30,7 +30,10 @@ Equipo::Equipo(
       sdf_turno = 0;
       break;
 
-    case USTEDES: break; //TODO
+    case USTEDES:
+      us_range[0] = 0; us_range[1] = quantum;
+      us_count = 0;
+      break;
   }
 
   logMsg("[Equipo] DONE equipo=%i, strat=%i\n", equipo, strat);
@@ -74,6 +77,7 @@ void Equipo::jugador(int nroJugador) {
 }
 
 void Equipo::moverse(int nroJugador, const struct Pos& to) { //U: Mueve al jugador hacia una posición
+  //NOTA: Por como lo implementamos, cada estrategia se asegura por su cuenta que sólo un jugador se mueva a la vez
   struct Pos from = posiciones[nroJugador];
 
   direccion dir;
@@ -161,7 +165,24 @@ void Equipo::shortestDistanceFirst(int nroJugador) {
 }
 
 void Equipo::ustedes(int nroJugador) {
-  //TODO
+  bool juegoEste = nroJugador >= us_range[0]; //A: Estoy por arriba del piso
+  juegoEste &= nroJugador != us_range[1]; //A: Y, o estoy por abajo del techo, o el techo loopea lo que igual significa que me toca (ver informe)
+  if (juegoEste) { //A: Me toca este turno
+    logMsg("[ustedes] IN equipo=%i, nroJugador=%i\n", equipo, nroJugador);
+    us_moveMtx.lock(); //A: Sólo se mueve un jugador a la vez
+    moverse(nroJugador, banderas[contrincante(equipo)]);
+    us_moveMtx.unlock();
+  }
+
+  us_mtx.lock();
+  if (++us_count == threads.size()) { //A: Soy el último en pasar
+      us_range[0] = (us_range[0] + quantum) % threads.size(); //A: Shifteo el rango para les que les toca el siguiente turno
+      us_range[1] = (us_range[1] + quantum) % threads.size();
+      us_count = 0;
+      belcebu->terminoRonda(equipo);
+      logMsg("[ustedes] LAST equipo=%i, nroJugador=%i, newRange=(%i, %i)\n", equipo, nroJugador, us_range[0], us_range[1]);
+  }
+  us_mtx.unlock();
 }
 
 //************************************************************

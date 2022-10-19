@@ -55,6 +55,8 @@ private:
   int sdf_turno, sdf_closest;
 
   void ustedes(int nroJugador);
+  std::mutex us_mtx, us_moveMtx;
+  int us_range[2], us_count;
 };
 
 #endif // EQUIPO_H

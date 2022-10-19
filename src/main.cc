@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-const estrategia strat = RR;
-const int quantum = 3;
+const estrategia strat = USTEDES;
+const int quantum = 1;
 
 int main(void) {
   logMsg("MAIN strat=%i quantum=%i\n", strat, quantum);
