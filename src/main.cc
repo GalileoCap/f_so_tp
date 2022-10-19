@@ -22,7 +22,7 @@ int main(void) {
   rojo.terminar();
   azul.terminar();
 
-  std::cout << "Bandera capturada por el equipo " << belcebu.getGanador() << ". Felicidades!" << std::endl;
+  std::cout << "Bandera capturada por el equipo " << belcebu.ganador << ". Felicidades!" << std::endl;
   return 0;
 }
 

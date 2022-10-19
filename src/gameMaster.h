@@ -23,6 +23,7 @@ public:
   void tableroSize(int& height, int& width);
 
   sem_t semBandera;
+  color ganador;
 #ifndef TEST
 private:
 #endif // TEST
@@ -32,11 +33,10 @@ private:
 
   void logTablero(void);
 
-  color currEquipo, ganador;
+  color currEquipo;
   std::vector<struct Pos> posiciones[2];
   std::vector<std::vector<color>> tablero;
 
-  std::mutex mtx;
   class Barrier *barriers[2]; //TODO: No punteros, tira un error de compilación si no lo son
 };
 

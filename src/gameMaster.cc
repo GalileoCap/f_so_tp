@@ -16,12 +16,11 @@ GameMaster::GameMaster(const class Config& config) {
   sem_init(&semBandera, 1, 1); //A: Dejo que un sólo equipo busque la bandera
   barriers[currEquipo]->post(ganador); //A: Dejo que arranque un equipo
 
-  logMsg("GAMEMASTER done currEquipo=%i\n", currEquipo);
+  logMsg("[GameMaster] DONE currEquipo=%i\n", currEquipo);
   //logTablero();
 }
 
 void GameMaster::moverJugador(direccion dir, int nroJugador) {
-  mtx.lock(); //A: Sólo se mueve un jugador a la vez
   struct Pos pos = posiciones[currEquipo][nroJugador],
              newPos = pos.mover(dir);
   
@@ -36,13 +35,10 @@ void GameMaster::moverJugador(direccion dir, int nroJugador) {
     tablero[pos.y][pos.x] = VACIO;
     tablero[newPos.y][newPos.x] = currEquipo;
   }
-
-  mtx.unlock();
 }
 
 void GameMaster::terminoRonda(color equipo) {
-  mtx.lock();
-  logMsg("GAMEMASTER terminoRonda equipo=%i, ganador=%i\n", equipo, ganador);
+  logMsg("[terminoRonda] equipo=%i, ganador=%i\n", equipo, ganador);
   logTablero();
 
   assert(equipo == currEquipo); //A: Solo nos puede pedir terminar el equipo al que le toca
@@ -53,8 +49,6 @@ void GameMaster::terminoRonda(color equipo) {
     barriers[ROJO]->post(ganador); //A: Dejo pasara a ambos equipos
     barriers[AZUL]->post(ganador);
   }
-
-  mtx.unlock();
 }
 
 bool GameMaster::mePuedoMover(struct Pos pos, direccion dir) {
@@ -64,13 +58,6 @@ bool GameMaster::mePuedoMover(struct Pos pos, direccion dir) {
 
 color GameMaster::waitTurn(color equipo) {
   return barriers[equipo]->wait();
-}
-
-color GameMaster::getGanador(void) {
-  mtx.lock(); //TODO: Necesitamos este mtx?
-  color res = ganador;
-  mtx.unlock();
-  return res;
 }
 
 void GameMaster::tableroSize(int& height, int& width) {
