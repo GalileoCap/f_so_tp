@@ -12,6 +12,7 @@ void consumeBarrier(class Barrier *barrier) { //TODO: Definirla en testutils.cc 
   for (int i = 0; i < 3; i++)
     for (int n = 0; n < barrier->N; n++)
       sem_trywait(&barrier->step[i]);
+  sem_post(&barrier->step[3]);
 }
 
 TEST(GameMaster, init) {
@@ -34,7 +35,7 @@ TEST(GameMaster, init) {
   EXPECT_EQ(belcebu.tablero, tablero);
 
   EXPECT_EQ(belcebu.currEquipo, EMPIEZA); //A: Empieza el equipo correcto
-  EXPECT_EQ(belcebu.getGanador(), INDEFINIDO); //A: Empieza sin haber ganado alguien
+  EXPECT_EQ(belcebu.ganador, INDEFINIDO); //A: Empieza sin haber ganado alguien
 
   EXPECT_EQ(getSemValue(&belcebu.semBandera), 1); //A: Sólo deja que uno busque la bandera
 
@@ -70,7 +71,7 @@ TEST(GameMaster, moverJugador) {
   EXPECT_EQ(belcebu.tablero, tablero);
 
   //A: Actualizó al ganador correctamente
-  EXPECT_EQ(belcebu.getGanador(), equipo);
+  EXPECT_EQ(belcebu.ganador, equipo);
 
   //TODO: Movimiento no-ganador
   //TODO: Movimiento inválido

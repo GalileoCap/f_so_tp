@@ -35,5 +35,5 @@ TEST(Ejemplo, completo) {
   rojo.terminar();
   azul.terminar();
 
-  EXPECT_EQ(belcebu.getGanador(), ROJO);
+  EXPECT_EQ(belcebu.ganador, ROJO);
 }
