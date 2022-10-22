@@ -9,8 +9,10 @@ GameMaster::GameMaster(const class Config& config) {
     posiciones[equipo] = config.posiciones[equipo];
     for (const struct Pos& pos : posiciones[equipo]) tablero[pos.y][pos.x] = equipo; //A: Pongo a los jugadores
     barriers[equipo] = new Barrier(equipo, config.cantJugadores);
+    movidas[equipo] = 0;
   }
 
+  atentoMovidas = false;
   currEquipo = EMPIEZA;
   ganador = INDEFINIDO;
   sem_init(&semBandera, 1, 1); //A: Dejo que un sólo equipo busque la bandera
@@ -34,6 +36,7 @@ void GameMaster::moverJugador(direccion dir, int nroJugador) {
     posiciones[currEquipo][nroJugador] = newPos;
     tablero[pos.y][pos.x] = VACIO;
     tablero[newPos.y][newPos.x] = currEquipo;
+    movidas[currEquipo]++;
   }
 }
 
@@ -42,8 +45,14 @@ void GameMaster::terminoRonda(color equipo) {
   logTablero();
 
   assert(equipo == currEquipo); //A: Solo nos puede pedir terminar el equipo al que le toca
+  if (movidas[equipo] == 0) { //A: Nadie se movió este turno
+    if (atentoMovidas) ganador = EMPATE; //A: Nadie se movió en dos turnos
+    else atentoMovidas = true;
+  } else atentoMovidas = false;
+
+  currEquipo = contrincante(equipo); //A: Cambio de equipo
   if (ganador == INDEFINIDO) { //A: Sigue el juego
-    currEquipo = contrincante(equipo); //A: Cambio de equipo
+    movidas[currEquipo] = 0;
     barriers[currEquipo]->post(ganador); //A: Le doy el turno
   } else { //A: Se terminó el juego
     barriers[ROJO]->post(ganador); //A: Dejo pasara a ambos equipos

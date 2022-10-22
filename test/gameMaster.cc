@@ -8,13 +8,6 @@
 #include <vector>
 #include <semaphore.h>
 
-void consumeBarrier(class Barrier *barrier) { //TODO: Definirla en testutils.cc me da error de compilación, no se da cuenta que ahora todo es público
-  for (int i = 0; i < 3; i++)
-    for (int n = 0; n < barrier->N; n++)
-      sem_trywait(&barrier->step[i]);
-  sem_post(&barrier->step[3]);
-}
-
 TEST(GameMaster, init) {
   //******************************
   //S: Setup
@@ -77,7 +70,7 @@ TEST(GameMaster, moverJugador) {
   //TODO: Movimiento inválido
 }
 
-TEST(GameMaster, terminoRonda) {
+TEST(GameMaster, terminoRondaNormal) {
   //******************************
   //S: Setup
 
@@ -91,7 +84,8 @@ TEST(GameMaster, terminoRonda) {
 
   color equipo = belcebu.currEquipo;
 
-  consumeBarrier(belcebu.barriers[equipo]);
+  belcebu.barriers[equipo]->consume();
+  belcebu.movidas[equipo] = 1;
   belcebu.terminoRonda(equipo);
 
   //A: Le toca al nuevo equipo
@@ -101,7 +95,8 @@ TEST(GameMaster, terminoRonda) {
   EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), 0);
   EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), config.cantJugadores);
 
-  consumeBarrier(belcebu.barriers[contrincante(equipo)]);
+  belcebu.barriers[contrincante(equipo)]->consume();
+  belcebu.movidas[equipo] = 1;
   belcebu.terminoRonda(contrincante(equipo));
 
   //A: Le vuelve a tocar al primer equipo
@@ -112,8 +107,46 @@ TEST(GameMaster, terminoRonda) {
   EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), 0);
 
   belcebu.moverJugador(ARRIBA, 0); //NOTA: Movida ganadora
-  consumeBarrier(belcebu.barriers[equipo]);
+  belcebu.barriers[equipo]->consume();
   belcebu.terminoRonda(equipo);
+
+  //A: Deja pasar a ambos equipos
+  EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), config.cantJugadores);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), config.cantJugadores);
+}
+
+TEST(GameMaster, terminoRondaEmpate) {
+  //******************************
+  //S: Setup
+
+  simpleSetup();
+
+  //******************************
+  //S: Test
+
+  class Config config;
+  class GameMaster belcebu(config);
+
+  color equipo = belcebu.currEquipo;
+
+  belcebu.barriers[equipo]->consume();
+  belcebu.terminoRonda(equipo);
+
+  //A: Le toca al nuevo equipo
+  EXPECT_EQ(belcebu.currEquipo, contrincante(equipo));
+
+  //A: Deja pasar al equipo correcto
+  EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), 0);
+  EXPECT_EQ(getSemValue(&belcebu.barriers[contrincante(equipo)]->step[0]), config.cantJugadores);
+
+  belcebu.barriers[contrincante(equipo)]->consume();
+  belcebu.terminoRonda(contrincante(equipo));
+
+  //A: Le volvería a tocar al primer equipo
+  EXPECT_EQ(belcebu.currEquipo, equipo);
+
+  //A: Nadie se movió, hubo empate
+  EXPECT_EQ(belcebu.ganador, EMPATE);
 
   //A: Deja pasar a ambos equipos
   EXPECT_EQ(getSemValue(&belcebu.barriers[equipo]->step[0]), config.cantJugadores);

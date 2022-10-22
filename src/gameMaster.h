@@ -34,6 +34,7 @@ private:
   void logTablero(void);
 
   color currEquipo;
+  int movidas[2]; bool atentoMovidas = false;
   std::vector<struct Pos> posiciones[2];
   std::vector<std::vector<color>> tablero;
 

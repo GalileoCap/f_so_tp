@@ -17,6 +17,7 @@ TEST(Barrier, init) {
   EXPECT_EQ(getSemValue(&barrier.step[0]), 0);
   EXPECT_EQ(getSemValue(&barrier.step[1]), 0);
   EXPECT_EQ(getSemValue(&barrier.step[2]), 0);
+  EXPECT_EQ(getSemValue(&barrier.step[3]), 1);
 }
 
 TEST(Barrier, post) {
@@ -33,6 +34,13 @@ TEST(Barrier, post) {
   EXPECT_EQ(getSemValue(&barrier.step[0]), N);
   EXPECT_EQ(getSemValue(&barrier.step[1]), 0);
   EXPECT_EQ(getSemValue(&barrier.step[2]), 0);
+
+  //A: No deja hast post hasta ser consumido
+  EXPECT_EQ(getSemValue(&barrier.step[3]), 0);
+
+  //A: Deja hacer post luego de ser consumido
+  barrier.consume();
+  EXPECT_EQ(getSemValue(&barrier.step[3]), 1);
 }
 
 //TODO: Wait

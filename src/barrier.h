@@ -13,9 +13,11 @@ public:
   color wait(void);
   void post(color _msg);
 
-#ifndef TEST
+#ifdef TESTING
+  void consume(void);
+#else
 private:
-#endif // TEST
+#endif // TESTING
   int N, n; color equipo, msg;
   std::mutex mtx;
   sem_t step[4];
