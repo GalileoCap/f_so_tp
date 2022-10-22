@@ -14,6 +14,7 @@ Equipo::Equipo(
       break;
 
     case RR:
+      quantum = std::max(quantum, cantJugadores); //A: En Round Robin todos los jugadores se tienen que mover al menos una vez
       quantumLeft = quantum;
       rr_mtx.reserve(cantJugadores);
       for (int i = 0; i < cantJugadores; i++) { //A: Inicio todos los mutex sin que los dejen pasar
