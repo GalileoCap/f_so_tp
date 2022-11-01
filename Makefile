@@ -5,21 +5,22 @@ TESTD := ./test
 OFILE := tpso
 DBGFILE := $(OFILE).debug
 TESTFILE := $(OFILE).test
+ANFILE := $(OFILE).an
 ENTREGA := Cappella_TODO_TODO_TODO.zip #TODO
 
 CXX := g++
-CFLAGS := -std=c++17 -Og -I$(SRCD) #TODO: O2
+CFLAGS := -std=c++17 -O3 -I$(SRCD) #-Wall
 DBGFLAGS := $(CFLAGS) -g -DDEBUG
 TESTFLAGS := $(DBGFLAGS) -DTESTING
+ANFLAGS := $(CFLAGS) -DAN -lrt
 
 CSRC := $(wildcard $(SRCD)/**/*.cc $(SRCD)/*.cc)
-TEXSRC := ./informe/informe.tex
 
 .PHONY: clean mkdir
 default: main
 
-entrega: mkdir
-	zip $(BUILDD)/$(ENTREGA) informe.pdf Makefile README.md src test -r9
+entrega: clean mkdir
+	zip $(BUILDD)/$(ENTREGA) informe.pdf Makefile README.md src test analysis extern -r9
 
 main: mkdir
 	$(CXX) $(CFLAGS) $(CSRC) -o $(BUILDD)/$(OFILE)
@@ -35,6 +36,13 @@ test: mkdir
 				test/{*,gtest-1.8.1/*}.cc \
 				-o $(BUILDD)/$(TESTFILE)
 	@printf "Run with:\n$(BUILDD)/$(TESTFILE)\n"
+
+an: mkdir
+	$(CXX) $(ANFLAGS) \
+				$(filter-out $(SRCD)/main.cc, $(CSRC)) \
+				analysis/main.cc \
+				-o $(BUILDD)/$(ANFILE)
+	python analysis/main.py
 
 mkdir:
 	mkdir -p $(BUILDD)
