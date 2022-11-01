@@ -194,7 +194,7 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
   logMsg("[buscarBanderas] equipo=%i\n", equipo);
 
   int height, width; belcebu->tableroSize(height, width);
-  bool found[2] = {false, false}; //U: True cuando se encontró a esa bandera
+  bool found = false; //U: True cuando se encontró a esa bandera
 
   std::vector<std::thread> searchThreads(posiciones.size()); //A: Limito los threads al ancho del tablero //TODO: Dividir a lo ancho y a lo alto, para no limitar así
 
@@ -203,33 +203,48 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
     int from = block * i, to = std::min(from + block, width);
     searchThreads[i] = std::thread(
       &Equipo::buscarThread, this,
-      height, from, to, std::ref(found[equipo]), std::ref(found[contrincante(equipo)])
+      height, from, to, std::ref(found)
     );
   }
   for (auto& t : searchThreads) t.join(); //A: Espero a que terminen
 
-  struct Pos posNuestra = banderas[equipo],
-             posEnemigo = banderas[contrincante(equipo)];
-  logMsg("[buscarBanderas] equipo=%i, threads=%i, block=%i, posNuestra=(%i, %i), posEnemigo=(%i, %i)\n", equipo, searchThreads.size(), block, posNuestra.x, posEnemigo.y, posEnemigo.x, posEnemigo.y);
+  struct Pos pos = banderas[contrincante(equipo)];
+  logMsg("[buscarBanderas] equipo=%i, threads=%i, block=%i, pos=(%i, %i)\n", equipo, searchThreads.size(), block, pos.x, pos.y);
 
   sem_post(&belcebu->semBandera); //A: Dejo que el otro equipo busque la bandera //NOTA: El segundo equipo en buscarla va hacer un post que puede ser ignorado ya que nadie va a esperarlo
 }
 
-void Equipo::buscarThread(int height, int from, int to, bool& foundOurs, bool& foundEnemy) { //U: Cada thread recorre una porción del tablero hasta terminar o que entre todos hayan encontrado ambas banderas
+void Equipo::buscarThread(int height, int from, int to, bool& found) { //U: Cada thread recorre una porción del tablero hasta terminar o que entre todos hayan encontrado ambas banderas
   logMsg("[buscarThread] from=%i, to=%i\n", from, to);
 
-  for (int x = from; x < to && !(foundOurs && foundEnemy); x++) //A: Recorro el tablero
-    for (int y = 0; y < height && !(foundOurs && foundEnemy); y++) {
+  for (int x = from; x < to && !found; x++) //A: Recorro el tablero
+    for (int y = 0; y < height && !found; y++) {
     struct Pos pos({x, y});
     color enPos = belcebu->enPosicion(pos);
-    if (enPos == bandera(equipo)) { //A: Encontré mi bandera
-      foundOurs = true;
-      banderas[equipo] = pos;
-    } else if (enPos == bandera(contrincante(equipo))) { //A: Encontré la bandera contraria
-      foundEnemy = true;
+    if (enPos == bandera(contrincante(equipo))) { //A: Encontré la bandera contraria
+      found = true;
       banderas[contrincante(equipo)] = pos;
     }
   }
   //NOTA: No hay problema con que estemos asignando los valores sin un mtx porque vamos a setear el mismo valor
   //      Aunque sí es posible que haya problemas de sincronización al revisar si ya se encontaron las banderas, pero arreglarlos agrega complejidad y probablemente tarde más que el thread revise una posición extra
+}
+
+void Equipo::buscarSecuencial(void) {
+  int height, width; belcebu->tableroSize(height, width);
+  logMsg("[buscarSecuencial] equipo=%i, width=%i, height=%i\n", equipo, width, height);
+  bool found = false; //U: True cuando se encontró a esa bandera
+
+  for (int x = 0; x < width && !found; x++) //A: Recorro el tablero
+    for (int y = 0; y < height && !found; y++) {
+    struct Pos pos({x, y});
+    color enPos = belcebu->enPosicion(pos);
+    if (enPos == bandera(contrincante(equipo))) { //A: Encontré la bandera contraria
+      found = true;
+      banderas[contrincante(equipo)] = pos;
+    }
+  }
+
+  struct Pos pos = banderas[contrincante(equipo)];
+  logMsg("[buscarSecuencial] equipo=%i, pos=(%i, %i)\n", equipo, pos.y, pos.x);
 }

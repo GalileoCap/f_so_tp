@@ -59,8 +59,28 @@ TEST(Equipo, buscarBanderas) {
   class Equipo equipo(&belcebu, ROJO, strat, config.cantJugadores, quantum, config.posiciones[ROJO]);
   equipo.buscarBanderas();
   
-  EXPECT_EQ(equipo.banderas[ROJO], config.banderas[ROJO]);
-  EXPECT_EQ(equipo.banderas[AZUL], config.banderas[AZUL]);
+  EXPECT_EQ(equipo.banderas[contrincante(equipo.equipo)], config.banderas[contrincante(equipo.equipo)]);
+}
+
+TEST(Equipo, buscarSecuencial) {
+  //******************************
+  //S: Setup
+
+  fullSetup();
+
+  //******************************
+  //S: Test
+
+  const estrategia strat = SECUENCIAL;
+  const int quantum = 3;
+
+  class Config config;
+  class GameMaster belcebu(config);
+
+  class Equipo equipo(&belcebu, ROJO, strat, config.cantJugadores, quantum, config.posiciones[ROJO]);
+  equipo.buscarSecuencial();
+  
+  EXPECT_EQ(equipo.banderas[contrincante(equipo.equipo)], config.banderas[contrincante(equipo.equipo)]);
 }
 
 //TODO: buscarThread

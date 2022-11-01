@@ -26,8 +26,9 @@ private:
   void moverse(int nroJugador, const struct Pos& to); //U: Mueve al jugador hacia una posición
   bool esperarBelcebu(void);
 
-  void buscarBanderas(void); //U: Busca ambas banderas en el tablero
-  void buscarThread(int height, int from, int to, bool& foundOurs, bool& foundEnemy); //U: Cada thread recorre una porción del tablero hasta terminar o que entre todos hayan encontrado ambas banderas
+  void buscarSecuencial(void); //U: Busca ambas banderas en el tablero de forma secuencial
+  void buscarBanderas(void); //U: Busca ambas banderas en el tablero usando threads
+  void buscarThread(int height, int from, int to, bool& found); //U: Cada thread recorre una porción del tablero hasta terminar o que entre todos hayan encontrado ambas banderas
 
   class GameMaster *belcebu; 
   color equipo;
