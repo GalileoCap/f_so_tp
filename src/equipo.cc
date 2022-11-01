@@ -116,8 +116,7 @@ void Equipo::secuencial(int nroJugador) {
 }
 
 void Equipo::roundRobin(int nroJugador) {
-  bool seguir = nroJugador < quantum;
-  while (seguir) {
+  while (true) {
     rr_mtx[nroJugador]->lock(); //A: Espero a mi turno //NOTA: Soy el único corriendo durante mi turno
     logMsg("[roundRobin] STEP equipo=%i, nroJugador=%i, quantumLeft=%i\n", equipo, nroJugador, quantumLeft);
 
@@ -132,8 +131,8 @@ void Equipo::roundRobin(int nroJugador) {
 
       break; //A: Salgo
     } else { //A: Le toca al siguiente
-      seguir = quantumLeft >= threads.size(); //A: Queda suficiente quantum para que me vuelva a tocar
       rr_mtx[(nroJugador + 1) % rr_mtx.size()]->unlock(); //A: Dejo pasar al siguiente
+      if (quantumLeft < threads.size()) break; //A: No queda suficiente quantum para que me vuelva a tocar
     }
   }
 
@@ -142,10 +141,11 @@ void Equipo::roundRobin(int nroJugador) {
 
 void Equipo::shortestDistanceFirst(int nroJugador) {
   sdf_distances[nroJugador] = posiciones[nroJugador].distance(banderas[contrincante(equipo)]); //A: Calculo mi distancia //NOTA: Como todos sólo modifican su propio valor, no es parte del area crítica
-  sdf_closest = 0; //A: Reinicio el closest //NOTA: Como todos ponen el mismo valor, no pertenece al area crítica
   sdf_mtx.lock();
-  if (++sdf_turno == threads.size()) //A: Soy el último
+  if (++sdf_turno == threads.size()) { //A: Soy el último, todos ya calcularon sus distancias
     for (int i = 0; i < threads.size(); i++) sem_post(&sdf_step[0]); //A: Dejo pasar a todos
+    sdf_closest = 0; //A: Reinicio el closest
+  }
   sdf_mtx.unlock();
   sem_wait(&sdf_step[0]);
 
