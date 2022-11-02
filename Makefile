@@ -42,7 +42,8 @@ an: mkdir
 				$(filter-out $(SRCD)/main.cc, $(CSRC)) \
 				analysis/main.cc \
 				-o $(BUILDD)/$(ANFILE)
-	python analysis/main.py
+	pipenv install
+	pipenv run python analysis/main.py
 
 mkdir:
 	mkdir -p $(BUILDD)
