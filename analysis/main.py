@@ -1,5 +1,7 @@
-import pandas as pd
 import subprocess
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 Test = {
   'game': 0,
@@ -47,30 +49,52 @@ def createConfig(*, sz = (3, 3), players = 2, flags = None, teams = None):
     f.writelines([f'{pos[0]} {pos[1]}\n' for team in teams for pos in team]);
 
 def testSearch(r = 1):
-  data = [];
-  sz = [(10000, 10000)]; #TODO: Different sizes
-  flags = [((0, 0), (0, 1)), ((7503, 0), (7503, 1)), ((9999, 9998), (9999, 9999))]; #TODO: More flag positions
-  for _sz in sz:
-    for _flags in flags:
-      #TODO: More threads(players)
-      #TODO: Check csv already exists
-      createConfig(sz = _sz, flags = _flags);
-      for _ in range(r):
-        _data = run(Test['search']);
-        data.append(list(_data) + [_sz, _flags[0]]);
-      #TODO: Save each on it's own csv
+  df = pd.DataFrame();
+  fpath = f'./build/{r}_testSearch.csv.gz';
+  try:
+    df = pd.read_csv(fpath, index_col = 0);
+  except:
+    data = [];
+    sz = [(10000, 10000)]; #TODO: Different sizes
+    flags = [((0, 0), (0, 1)), ((7503, 0), (7503, 1)), ((9999, 9998), (9999, 9999))]; #TODO: More flag positions
+    #TODO: More threads(players)
+    for _sz in sz:
+      for _flags in flags:
+        createConfig(sz = _sz, flags = _flags);
+        for _ in range(r):
+          _data = run(Test['search']);
+          data.append(list(_data) + [_sz, str(_flags[0])]);
+        #TODO: Save each on it's own csv
 
-  df = pd.DataFrame(data, columns = ['total', 'sequential', 'threaded', 'sz', 'flags']);
-  df.to_csv(f'./build/{r}_testSearch.csv.gz');
+    df = pd.DataFrame(data, columns = ['total', 'sequential', 'threaded', 'sz', 'flags']);
+    df.to_csv(fpath);
 
   for col in ['total', 'sequential', 'threaded']: df[col] /= 1e6; #A: To ms #TODO: Not until printing
   for col in ['sequential', 'threaded']: df[f'{col}_pct'] = df[col] / df['total'];
   df['ratio'] = df['sequential'] / df['threaded'];
+  # df.rename({'sequential': 'Secuencial', 'threaded': 'Threaded'}, axis = 1, inplace = True); #TODO
 
-  df_close = df[df['flags'] == (0, 0)];
-  df_mid = df[df['flags'] == (7503, 0)];
-  df_far = df[df['flags'] == (9999, 9998)];
-  print(df_close.describe(), df_mid.describe(), df_far.describe(), sep = '\n');
+  return df;
 
 if __name__ == '__main__':
-  testSearch(1);
+  r = 1000;
+  df = testSearch(r);
+  df_close = df[df['flags'] == str((0, 0))];
+  df_mid = df[df['flags'] == str((7503, 0))];
+  df_far = df[df['flags'] == str((9999, 9998))];
+
+  print(df_close.describe(), df_mid.describe(), df_far.describe(), sep = '\n');
+
+  if False:
+    fig = go.Figure();
+
+    for _df in ['cerca']:#, 'medio', 'lejos']:
+      for col in ['Secuencial', 'Threaded']:
+        thisDf = None;
+        if _df == 'cerca': thisDf = df_close;
+        elif _df == 'medio': thisDf = df_mid;
+        else: thisDf = df_far;
+        fig.add_trace(go.Box(y = thisDf[col], name = f'{col} ({_df})'));
+
+    fig.update_yaxes(type = 'log', title = 'Tiempo de búsqueda (ms, log)');
+    fig.write_image('./build/img.png');

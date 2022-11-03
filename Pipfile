@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 pandas = "*"
+"plotly.express" = "*"
+kaleido = "*"
+plotly = "*"
 
 [dev-packages]
 
