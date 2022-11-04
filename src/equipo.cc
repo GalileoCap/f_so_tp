@@ -198,7 +198,7 @@ void Equipo::buscarBanderas(void) { //U: Busca ambas banderas en el tablero
 
   std::vector<std::thread> searchThreads(posiciones.size()); //A: Limito los threads al ancho del tablero //TODO: Dividir a lo ancho y a lo alto, para no limitar así
 
-  int block = width / searchThreads.size() + 1; //U: Ancho del bloque que va revisar cada thread //NOTA: +1 por si hay errores de redondeo
+  int block = (width-1) / searchThreads.size() + 1; //U: Ancho del bloque que va revisar cada thread
   for (int i = 0; i < searchThreads.size(); i++) { //A: Creo los threads
     int from = block * i, to = std::min(from + block, width);
     searchThreads[i] = std::thread(
